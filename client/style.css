@@ -195,6 +195,23 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 .tw-fnref { font-size: 0.75em; line-height: 0; }
 .tw-fnref a { text-decoration: none; }
 .tw-footnotes { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.92rem; }
+
+/* sidenotes: on wide screens footnotes sit in the right margin, next to the line that cites them;
+   on narrower screens they stay in the list at the end of the page */
+.tw-sidenote { display: none; }
+@media (min-width: 1340px) {
+  .tw-sidenote {
+    display: block; float: right; clear: right; position: relative;
+    width: 15rem; margin: 0.25rem -17.5rem 0.6rem 0;
+    font-family: var(--font-sans); font-size: 0.82rem; line-height: 1.45; font-style: normal; font-weight: 400;
+    color: var(--ink-soft); text-align: left; hyphens: auto;
+    border-left: 2px solid var(--rule); padding-left: 0.6rem;
+    transition: border-color 0.3s, background-color 0.3s;
+  }
+  .tw-sidenote-num { font-weight: 600; color: var(--accent-soft); margin-right: 0.15rem; }
+  .tw-sidenote.flash, .tw-sidenote:hover { border-left-color: var(--accent-soft); background: color-mix(in oklab, var(--accent-soft) 8%, transparent); }
+  .tw-footnotes { display: none; }
+}
 .tw-bib li { margin: 0.6rem 0; }
 .tw-bib li:target { background: color-mix(in oklab, var(--accent-soft) 15%, transparent); }
 

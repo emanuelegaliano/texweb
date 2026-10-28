@@ -12,7 +12,23 @@ import { t } from './lib/i18n.js';
 export function start({ widgets }) {
   theme();
   spy();
+  sidenotes();
   mountWidgets(widgets);
+}
+
+// when the sidenote is visible, clicking a footnote mark highlights it instead of jumping to the list
+function sidenotes() {
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest?.('.tw-fnref a[data-note]');
+    if (!a) return;
+    const note = document.getElementById(`sn-${a.dataset.note}`);
+    if (!note || getComputedStyle(note).display === 'none') return;
+    e.preventDefault();
+    note.classList.remove('flash');
+    void note.offsetWidth;
+    note.classList.add('flash');
+    setTimeout(() => note.classList.remove('flash'), 1500);
+  });
 }
 
 function theme() {

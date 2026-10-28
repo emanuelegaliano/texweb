@@ -272,10 +272,14 @@ export class Renderer {
       textcolor: function (n, ctx, flow, a) { flow.inline(`<span style="color:${this.color(argText(a[0]))}">${this.inlineArg(a[1], ctx)}</span>`); },
       '\\': function (n, ctx, flow) { flow.inline('<br>'); },
 
+      // a footnote is rendered twice: as a sidenote next to the text (wide screens)
+      // and in the list at the end of the page (narrow screens); CSS shows one of the two
       footnote: function (n, ctx, flow, a) {
         const k = this.page.footnotes.length + 1;
-        this.page.footnotes.push(this.inlineArg(a[1], ctx));
-        flow.inline(`<sup class="tw-fnref" id="fnref-${k}"><a href="#fn-${k}">${k}</a></sup>`);
+        const html = this.inlineArg(a[1], ctx);
+        this.page.footnotes.push(html);
+        flow.inline(`<sup class="tw-fnref" id="fnref-${k}"><a href="#fn-${k}" data-note="${k}">${k}</a></sup>`
+          + `<span class="tw-sidenote" id="sn-${k}" role="note"><span class="tw-sidenote-num">${k}</span> ${html}</span>`);
       },
       url: function (n, ctx, flow, a) {
         const u = sourceOfArg(ctx, a[0]);

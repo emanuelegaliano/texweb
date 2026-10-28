@@ -30,6 +30,10 @@ Run `texweb check` on an existing project to see what is missing before you star
 | skipped | `titlepage`, `comment` |
 | ignored | PDF layout commands: `\centering`, `\noindent`, `\vspace`, `\hspace`, `\small`, `\large`, `\clearpage`, `\newpage`, `\setlength`, `\setcounter`, `\maketitle`, `\tableofcontents`, `\frontmatter`, `\mainmatter`, `\backmatter`, ... |
 
+## Footnotes
+
+`\footnote` is shown as a **sidenote** in the right margin, next to the line that cites it, when the screen is wide enough. On narrower screens the notes are listed at the end of the page, with links back to the text.
+
 ## Numbering
 
 Numbering follows the `book` class: chapters, sections down to `\subsubsection`; figures, tables, algorithms, equations and numbered boxes within the chapter (`3.4`); appendix chapters with letters. A `\label` refers to the last numbered thing before it, as in LaTeX; inside a figure it always refers to the figure.
