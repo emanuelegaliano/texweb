@@ -1,4 +1,4 @@
-// piccoli helper per costruire DOM e SVG senza framework
+// small helpers to build DOM and SVG without a framework
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -22,12 +22,12 @@ export const h = (tag, attrs, children) => apply(document.createElement(tag), at
 export const s = (tag, attrs, children) => apply(document.createElementNS(SVG_NS, tag), attrs, children);
 
 export function svgRoot(width, height, attrs = {}) {
-  // non oltre ~1.4 volte la dimensione nominale, altrimenti su schermi larghi le figure diventano enormi
+  // no more than ~1.4 times the nominal size, otherwise figures become huge on wide screens
   return s('svg', { viewBox: `0 0 ${width} ${height}`, class: 'fig-svg', role: 'img', style: { maxWidth: `${Math.round(width * 1.4)}px` }, ...attrs });
 }
 
-// colore di una cella in funzione del valore, come nelle figure del PDF:
-// più il valore è alto più la cella è scura (in dark mode si inverte da sola)
+// cell color as a function of its value, as in the PDF figures:
+// the higher the value the darker the cell (it inverts by itself in dark mode)
 export function shade(v, max = 10) {
   const t = Math.max(0, Math.min(1, v / max));
   return {
@@ -36,7 +36,7 @@ export function shade(v, max = 10) {
   };
 }
 
-// formatta un numero con il segno meno tipografico
+// formats a number with a typographic minus sign
 export const fmt = (v, digits = 0) => {
   const r = Number.isInteger(v) ? String(v) : v.toFixed(digits || 2).replace(/\.?0+$/, '');
   return r.replace('-', '−');

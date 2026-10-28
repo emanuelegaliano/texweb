@@ -1,16 +1,16 @@
-\chapter{La convoluzione}\label{ch:conv}
+\chapter{Convolution}\label{ch:conv}
 \section{Cross-correlation}
-Sia $F$ l'immagine in input e $h$ un kernel di dimensione $(2k+1) \times (2k+1)$. La \textbf{cross-correlation} si definisce come:
+Let $F$ be the input image and $h$ a kernel of size $(2k+1) \times (2k+1)$. The \textbf{cross-correlation} is defined as:
 \[
 G[i, j] = \sum_{u=-k}^{k}\sum_{v=-k}^{k} h[u, v]\, F[i + u, j + v].
 \]
 
-\begin{osservazione}
-Quella che nelle CNN chiamiamo convoluzione è quasi sempre una cross-correlation \cite[cap.~9]{Goodfellow-et-al-2016}.
-\end{osservazione}
+\begin{remark}
+What CNNs call convolution is almost always a cross-correlation \cite[ch.~9]{Goodfellow-et-al-2016}.
+\end{remark}
 
-\paragraph{Esempio.}
-Applichiamo all'immagine $5 \times 5$ della figura~\ref{fig:sharpen} il kernel di \emph{sharpening}. Il salto tra le due zone, che nell'input era da 2 a 8, nell'output diventa da $-4$ a 14: il kernel accentua i bordi.
+\paragraph{Example.}
+We apply the \emph{sharpening} kernel to the $5 \times 5$ image of figure~\ref{fig:sharpen}. The jump between the two regions, from 2 to 8 in the input, becomes a jump from $-4$ to 14 in the output: the kernel enhances edges.
 
 \begin{figure}[htbp]
 \centering
@@ -24,22 +24,22 @@ Applichiamo all'immagine $5 \times 5$ della figura~\ref{fig:sharpen} il kernel d
   \numgrid[fill=green!10]{(5.8,-0.5)}{0.5}{{2,-4,14},{2,-10,14},{-4,20,8}}
 \end{tikzpicture}
 \end{widget}
-\caption{Il kernel di sharpening applicato a un'immagine $5 \times 5$. Nel PDF si vede la figura statica, sul sito il kernel scorre posizione per posizione.}
+\caption{The sharpening kernel applied to a $5 \times 5$ image. The PDF shows the static figure; on the website the kernel slides one position at a time.}
 \label{fig:sharpen}
 \end{figure}
 
-\section{Padding e stride}
-La dimensione dell'output di un layer convoluzionale è
+\section{Padding and stride}
+The output size of a convolutional layer is
 \[
 \text{output} = \frac{W - F + 2P}{S} + 1,
 \]
-dove $W$ è il lato dell'input, $F$ quello del kernel, $P$ il padding e $S$ lo stride \cite{Dumoulin2016}. Nella figura~\ref{fig:params} puoi cambiare tutti i parametri.
+where $W$ is the input side, $F$ the kernel side, $P$ the padding and $S$ the stride \cite{Dumoulin2016}. In figure~\ref{fig:params} you can change all the parameters.
 
 \begin{figure}[htbp]
 \centering
 \begin{widget}{conv-params}[W=7, F=3, S=2, presets]
 \begin{tikzpicture}[>=Stealth]
-  % input 7x7, kernel 3x3 in due posizioni con stride 2, output 3x3
+  % 7x7 input, 3x3 kernel in two positions with stride 2, 3x3 output
   \fill[Accent!20] (0,0) rectangle (2.625,-2.625);
   \draw[step=0.375, black!50] (0,0) grid (2.625,-2.625);
   \draw[very thick, red!70!black] (0,0) rectangle (1.125,-1.125);
@@ -53,7 +53,7 @@ dove $W$ è il lato dell'input, $F$ quello del kernel, $P$ il padding e $S$ lo s
   \node[font=\scriptsize] at (4.6625,0) {output $3 \times 3$};
 \end{tikzpicture}
 \end{widget}
-\caption{La formula della dimensione dell'output, con i parametri modificabili. Nel PDF c'è la figura statica, con $W = 7$, $F = 3$ e $S = 2$.}
+\caption{The output size formula, with editable parameters. The PDF shows the static figure, with $W = 7$, $F = 3$ and $S = 2$.}
 \label{fig:params}
 \end{figure}
 
@@ -65,6 +65,6 @@ dove $W$ è il lato dell'input, $F$ quello del kernel, $P$ il padding e $S$ lo s
   \draw[->, thick] (2.8,0.25) -- (3.8,0.25);
   \foreach \i in {0,...,2} \draw[black!40, fill=LemmaColor!25] (4+\i*0.5,0) rectangle ++(0.5,0.5);
 \end{tikzpicture}
-\caption{Una figura TikZ senza widget: sul sito è lo stesso SVG del PDF, compilato dallo stesso preambolo.}
+\caption{A TikZ figure without a widget: on the website it is the same SVG as in the PDF, compiled from the same preamble.}
 \label{fig:static}
 \end{figure}

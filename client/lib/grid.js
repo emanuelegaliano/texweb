@@ -1,7 +1,7 @@
 import { s, fmt } from './dom.js';
 
-// griglia di celle in SVG (l'equivalente di \numgrid nel preambolo LaTeX).
-// values: matrice di numeri/stringhe, oppure null per una griglia vuota rows x cols.
+// a grid of SVG cells (the equivalent of \numgrid in the LaTeX preamble).
+// values: matrix of numbers/strings, or null for an empty rows x cols grid.
 export function grid({ x = 0, y = 0, size = 32, values, rows, cols, cls = '', fontSize }) {
   rows = values ? values.length : rows;
   cols = values ? values[0].length : cols;
@@ -27,8 +27,8 @@ export function grid({ x = 0, y = 0, size = 32, values, rows, cols, cls = '', fo
   return { g, cells, rows, cols, size, x, y };
 }
 
-// rettangolo che evidenzia un blocco di celle (l'equivalente di \cellrect).
-// si sposta con una transizione CSS sul transform, così l'animazione è fluida.
+// a rectangle highlighting a block of cells (the equivalent of \cellrect).
+// it moves through a CSS transition on transform, so the animation is smooth.
 export function windowRect({ size, w = 1, h = 1, cls = 'win' }) {
   const rect = s('rect', { width: w * size, height: h * size, class: cls, rx: 3 });
   const g = s('g', { class: 'win-g' }, rect);

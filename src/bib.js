@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { readBalanced } from './preamble.js';
 
-// parser minimale per i file .bib: @tipo{chiave, campo = {valore} | "valore" | numero, ...}
+// minimal .bib parser: @type{key, field = {value} | "value" | number, ...}
 export function parseBib(src) {
   const entries = new Map();
   const re = /@([a-zA-Z]+)\s*\{/g;
@@ -34,7 +34,7 @@ export function parseBib(src) {
   return entries;
 }
 
-// toglie le graffe di protezione e i comandi più comuni dei campi bib
+// strips protective braces and the most common commands from bib fields
 const ACC = { "'": '\u0301', '`': '\u0300', '"': '\u0308', '^': '\u0302', '~': '\u0303' };
 const clean = (s) => s.replace(/\\(['`"^~])\{?([a-zA-Z])\}?/g, (_, a, c) => (c + ACC[a]).normalize('NFC'))
   .replace(/\\&/g, '&').replace(/\\textit\{([^}]*)\}|\\emph\{([^}]*)\}/g, '$1$2')
@@ -49,7 +49,7 @@ export function loadBib(files) {
   return all;
 }
 
-// "Cognome, Nome and Altro, Nome" -> ["Cognome", "Altro"]
+// "Last, First and Other, Name" -> ["Last", "Other"]
 export function lastNames(author = '') {
   return author.split(/\s+and\s+/).filter(Boolean).map((a) => {
     if (a.includes(',')) return a.split(',')[0].trim();
@@ -58,15 +58,15 @@ export function lastNames(author = '') {
   });
 }
 
-export function authorShort(entry) {
+export function authorShort(entry, lang = 'en') {
   const names = lastNames(entry.fields.author ?? entry.fields.editor ?? '');
   if (names.length === 0) return entry.fields.title ?? entry.key;
   if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} e ${names[1]}`;
+  if (names.length === 2) return `${names[0]} ${lang === 'it' ? 'e' : 'and'} ${names[1]}`;
   return `${names[0]} et al.`;
 }
 
-// ordinamento "nty" di biblatex: nome, titolo, anno
+// biblatex's "nty" sorting: name, title, year
 export const sortKey = (e) => `${lastNames(e.fields.author ?? '').join(' ')}|${e.fields.title ?? ''}|${e.fields.year ?? ''}`.toLowerCase();
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gli avvisi di deprecazione di Node sulle dipendenze di Vite non interessano chi scrive appunti
+// Node's deprecation warnings about Vite's dependencies are noise for people writing notes
 process.noDeprecation = true;
 const { dev, build, check } = await import('../src/server.js');
 
@@ -7,17 +7,17 @@ const [cmd, dir = '.', ...rest] = process.argv.slice(2);
 const flag = (name) => rest.includes(`--${name}`);
 const opt = (name) => { const i = rest.indexOf(`--${name}`); return i >= 0 ? rest[i + 1] : undefined; };
 
-const usage = `uso: texweb <comando> [cartella]
+const usage = `usage: texweb <command> [folder]
 
-  dev    avvia il server di sviluppo e rigenera a ogni salvataggio
-  build  genera il sito statico (in dist/, o in outDir della configurazione)
-  check  controlla i sorgenti senza scrivere niente (comandi sconosciuti, riferimenti, widget)
+  dev    start the development server, regenerating on every save
+  build  generate the static site (in dist/, or outDir from the configuration)
+  check  check the sources without writing anything (unknown commands, references, widgets)
 
-opzioni:
-  --port <n>   porta del server di sviluppo (predefinita 5180)
-  --force      completa la build anche se ci sono errori
-  --cache <d>  cartella di lavoro (predefinita .texweb/ nel progetto)
-  --out <d>    cartella del sito generato (predefinita dist/)`;
+options:
+  --port <n>   development server port (default 5180)
+  --force      finish the build even if there are errors
+  --cache <d>  working folder (default .texweb/ in the project)
+  --out <d>    output folder of the site (default dist/)`;
 
 const overrides = {};
 if (opt('cache')) overrides.cacheDir = opt('cache');

@@ -1,7 +1,7 @@
 import katex from 'katex';
 import { defineWidget, h, s, svgRoot, shade, fmt, grid, windowRect, label, createPlayer } from 'texweb/client';
 
-// un kernel che scorre su una piccola immagine, posizione per posizione
+// a kernel sliding over a small image, one position at a time
 
 export default defineWidget({
   name: 'sharpen',
@@ -26,7 +26,7 @@ export default defineWidget({
     const C = 40, gap = 46;
     const kx = 10 + W * C + gap, ox = kx + kw * C + gap;
     const top = 34, ky = top + ((H - kh) * C) / 2;
-    const svg = svgRoot(ox + OW * C + 10, top + H * C + 10, { 'aria-label': `Un kernel ${kh}×${kw} scorre su un'immagine ${H}×${W}` });
+    const svg = svgRoot(ox + OW * C + 10, top + H * C + 10, { 'aria-label': `A ${kh}×${kw} kernel slides over a ${H}×${W} image` });
 
     const inp = grid({ x: 10, y: top, size: C, values: input });
     inp.cells.forEach((row, r) => row.forEach((cell, c) => {

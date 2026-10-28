@@ -1,0 +1,37 @@
+\chapter{How texweb works}\label{ch:intro}
+These notes are written in \LaTeX{}, as usual: the same source produces the PDF with \texttt{pdflatex} and the website with \texttt{texweb dev}. References, citations and numbering work in both; for example, chapter~\ref{ch:conv} is about convolution and cites \cite{Goodfellow-et-al-2016}.
+
+\section{What you can write}
+The dialect covers everyday commands: \textbf{bold}, \emph{italics}, \texttt{code}, footnotes\footnote{Like this one, numbered per page.} and formulas such as $f(x) = \max\{0, x\}$ or
+\begin{equation}\label{eq:loss}
+  \mathcal{L}(\vartheta) = \frac{1}{N}\sum_{i=1}^{N} \big(y^{(i)} - h(x^{(i)}; \vartheta)\big)^2, \qquad \vartheta \in \R^d.
+\end{equation}
+Equation~\eqref{eq:loss} is the MSE.
+
+\begin{definition}[Loss function]\label{def:loss}
+A \textbf{loss function} measures the error the model makes when predicting $y$ from $x$.
+\end{definition}
+
+Definition~\ref{def:loss} is numbered within the chapter, as in the PDF.
+
+\begin{itemize}
+  \item bulleted lists,
+  \item numbered lists and tables,
+  \item TikZ figures, compiled by \LaTeX{} into SVG.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Model & Parameters & Layers \\
+\midrule
+MLP & 397\,510 & 2 \\
+CNN & 156 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Parameters of the first layer on MNIST.}
+\label{tab:param}
+\end{table}
+
+Table~\ref{tab:param} shows how many parameters are saved.

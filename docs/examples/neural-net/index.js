@@ -2,14 +2,14 @@ import katex from 'katex';
 import { defineWidget, h, s, svgRoot, createPlayer, fmt } from 'texweb/client';
 import './style.css';
 
-// le funzioni di attivazione che si possono scegliere dal .tex
+// the activation functions that can be chosen from the .tex
 const ACT = {
   relu: { f: (z) => Math.max(0, z), tex: '\\mathrm{ReLU}' },
   sigmoid: { f: (z) => 1 / (1 + Math.exp(-z)), tex: '\\sigma' },
   tanh: { f: Math.tanh, tex: '\\tanh' },
 };
 
-// generatore pseudo-casuale con seme: a ogni caricamento escono gli stessi pesi
+// seeded pseudo-random generator: every load produces the same weights
 function rng(seed) {
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -24,7 +24,7 @@ const sub = (n) => String(n).split('').map((d) => SUB[d]).join('');
 const r2 = (v) => Math.round(v * 100) / 100;
 
 export default defineWidget({
-  name: 'rete',
+  name: 'neural-net',
   params: {
     x: { type: 'list', default: [1, 0.5] },
     hidden: { type: 'integer', default: 3, min: 1, max: 6 },
@@ -34,7 +34,7 @@ export default defineWidget({
   },
 
   mount(el, { x, hidden, activation, seed, interval }) {
-    // ---- 1. i pesi: numeri tra -1 e 1, con una cifra decimale
+    // ---- 1. the weights: numbers between -1 and 1, with one decimal digit
     const rand = rng(seed);
     const w = () => Math.round((rand() * 2 - 1) * 10) / 10;
     const W1 = Array.from({ length: hidden }, () => [w(), w()]);
@@ -43,7 +43,7 @@ export default defineWidget({
     const b2 = w();
     const act = ACT[activation];
 
-    // ---- 2. il forward pass (si ricalcola se cambiano gli input)
+    // ---- 2. the forward pass (recomputed when the inputs change)
     let z, a, y;
     function forward() {
       z = W1.map((row, k) => row[0] * x[0] + row[1] * x[1] + b1[k]);
@@ -52,13 +52,13 @@ export default defineWidget({
     }
     forward();
 
-    // ---- 3. il disegno: posizioni dei neuroni, archi, cerchi
+    // ---- 3. the drawing: neuron positions, edges, circles
     const gap = 74;
     const height = Math.max(3, hidden) * gap + 30;
     const column = (cx, n) => Array.from({ length: n }, (_, i) => [cx, height / 2 + (i - (n - 1) / 2) * gap]);
     const P = { in: column(80, 2), hid: column(270, hidden), out: column(460, 1) };
 
-    const svg = svgRoot(540, height, { 'aria-label': `Rete con 2 input, ${hidden} neuroni nascosti e un output` });
+    const svg = svgRoot(540, height, { 'aria-label': `Network with 2 inputs, ${hidden} hidden neurons and one output` });
     const edgesG = s('g');
     const nodesG = s('g');
     svg.append(edgesG, nodesG);
@@ -67,12 +67,12 @@ export default defineWidget({
       const line = s('line', {
         x1: x1 + 24, y1, x2: x2 - 24, y2,
         class: `edge ${weight < 0 ? 'neg' : 'pos'}`,
-        'stroke-width': 1 + 3 * Math.abs(weight), // più il peso è grande, più l'arco è spesso
+        'stroke-width': 1 + 3 * Math.abs(weight), // the larger the weight, the thicker the edge
       });
       edgesG.append(line);
       return line;
     }
-    const e1 = W1.map((row, k) => row.map((wki, i) => edge(P.in[i], P.hid[k], wki))); // e1[k][i]: da x_i a h_k
+    const e1 = W1.map((row, k) => row.map((wki, i) => edge(P.in[i], P.hid[k], wki))); // e1[k][i]: from x_i to h_k
     const e2 = W2.map((wk, k) => edge(P.hid[k], P.out[0], wk));
 
     function neuron([cx, cy], name) {
@@ -91,9 +91,9 @@ export default defineWidget({
 
     const eq = h('div', { class: 'eq-line', 'aria-live': 'polite' });
 
-    // ---- 4. un passo dell'animazione: si disegna tutto da zero a partire da n.
-    // Non serve ricordare il passo precedente: indietro e ricomincia funzionano da soli,
-    // e il movimento tra uno stato e l'altro lo fanno le transizioni CSS.
+    // ---- 4. one animation step: everything is drawn from scratch, starting from n.
+    // There is no need to remember the previous step: back and restart work by themselves,
+    // and the motion between one state and the next is done by CSS transitions.
     function show(nd, v, scale) {
       nd.value.textContent = v == null ? '' : fmt(r2(v), 2);
       const level = v == null ? 0 : Math.min(1, Math.abs(v) / scale);
@@ -106,18 +106,18 @@ export default defineWidget({
       const maxX = Math.max(...x.map(Math.abs), 1e-9);
       const maxA = Math.max(...a.map(Math.abs), 1e-9);
 
-      // archi: accesi solo quelli del passo corrente
+      // edges: only those of the current step are on
       e1.forEach((row, k) => row.forEach((line) => line.classList.toggle('on', n === k + 1)));
       e2.forEach((line) => line.classList.toggle('on', n === hidden + 1));
 
-      // neuroni: un valore compare quando il suo passo è arrivato
+      // neurons: a value appears once its step has been reached
       nIn.forEach((nd, i) => show(nd, x[i], maxX));
       nHid.forEach((nd, k) => show(nd, n >= k + 1 ? a[k] : null, maxA));
       nHid.forEach((nd, k) => nd.g.classList.toggle('active', n === k + 1));
       show(nOut, n >= hidden + 1 ? y : null, Math.max(Math.abs(y), 1));
       nOut.g.classList.toggle('active', n === hidden + 1);
 
-      // la formula del passo
+      // the formula of the step
       let tex;
       if (n === 0) {
         tex = `x = (${fmt(x[0], 2)},\\ ${fmt(x[1], 2)})`;
@@ -135,7 +135,7 @@ export default defineWidget({
 
     const player = createPlayer({ steps: hidden + 2, onStep: draw, interval });
 
-    // ---- 5. (bonus) cursori per cambiare gli input: si ricalcola e si ridisegna il passo corrente
+    // ---- 5. (bonus) sliders to change the inputs: recompute and redraw the current step
     const sliders = h('div', { class: 'sliders' }, x.map((v, i) => {
       const out = h('output', { class: 'sl-val' }, fmt(v, 2));
       const input = h('input', {
@@ -150,6 +150,6 @@ export default defineWidget({
       return h('label', { class: 'sl' }, [h('span', { class: 'sl-name' }, `x${sub(i + 1)}`), input, out]);
     }));
 
-    el.append(h('div', { class: 'rete' }, [sliders, svg, eq, player.el]));
+    el.append(h('div', { class: 'neural-net' }, [sliders, svg, eq, player.el]));
   },
 });

@@ -1,7 +1,7 @@
 \documentclass[a4paper,11pt]{book}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[italian]{babel}
+\usepackage[english]{babel}
 \usepackage{libertinus}
 \usepackage{xcolor}
 \usepackage{amsmath,amssymb}
@@ -19,7 +19,7 @@
 \numberwithin{equation}{chapter}
 \newcommand{\R}{\mathbb{R}}
 
-% griglia di numeri, come nelle dispense
+% a grid of numbers: \numgrid[style]{(x,y)}{cell size}{{row 1},{row 2},...}
 \newcommand{\numgrid}[4][]{%
   \edef\numgridlist{#4}%
   \foreach \row [count=\ri] in \numgridlist {%
@@ -29,33 +29,34 @@
     }%
   }%
 }
+% a rectangle over a block of cells: \cellrect[style]{(x,y)}{cell size}{col}{row}{n cols}{n rows}
 \newcommand{\cellrect}[7][]{%
   \draw[#1] ($#2 + ({#4*#3},{-#5*#3})$) rectangle ++({#6*#3},{-#7*#3});%
 }
 
 \usepackage[skins]{tcolorbox}
-\newtcolorbox[auto counter, number within=chapter]{definizione}[1][]{
+\newtcolorbox[auto counter, number within=chapter]{definition}[1][]{
   enhanced, frame hidden, sharp corners, colback=Accent!6, coltitle=Accent,
   borderline west={2.5pt}{0pt}{Accent}, fonttitle=\sffamily\bfseries\small,
-  attach title to upper={\ }, title={Definizione~\thetcbcounter\ifx&#1&\else\ (#1)\fi.}}
-\newtcolorbox{osservazione}[1][]{
+  attach title to upper={\ }, title={Definition~\thetcbcounter\ifx&#1&\else\ (#1)\fi.}}
+\newtcolorbox{remark}[1][]{
   enhanced, frame hidden, sharp corners, colback=ObsColor!8, coltitle=ObsColor,
   borderline west={2.5pt}{0pt}{ObsColor}, fonttitle=\sffamily\bfseries\small,
-  attach title to upper={\ }, title={Osservazione\ifx&#1&\else\ (#1)\fi.}}
+  attach title to upper={\ }, title={Remark\ifx&#1&\else\ (#1)\fi.}}
 
 \usepackage[backend=bibtex]{biblatex}
 \addbibresource{refs.bib}
 \usepackage[hidelinks]{hyperref}
 
-\title{Esempio di appunti con texweb}
+\title{texweb example notes}
 \author{Emanuele Galiano}
 
 \begin{document}
 \maketitle
 \tableofcontents
 
-\input{chapters/introduzione}
-\input{chapters/convoluzione}
+\input{chapters/introduction}
+\input{chapters/convolution}
 
-\printbibliography[title={Bibliografia}]
+\printbibliography
 \end{document}

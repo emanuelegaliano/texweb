@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import { getParser } from '@unified-latex/unified-latex-util-parse';
 import { MACRO_SIGNATURES, ENV_SIGNATURES } from './dialect.js';
 
-// un file sorgente analizzato: l'albero, il testo originale e il nome, per gli errori
-// extra: firme aggiuntive { macros, envs } (macro del preambolo, box configurati)
+// a parsed source file: the tree, the original text and the file name (for errors)
+// extra: additional signatures { macros, envs } (preamble macros, configured boxes)
 export function parseFile(file, extra = {}) {
   const src = fs.readFileSync(file, 'utf8');
   return parseString(src, file, extra);
@@ -18,13 +18,13 @@ export function parseString(src, file, extra = {}) {
   return { ast, src, file };
 }
 
-// testo originale di un nodo (per gli ambienti la posizione copre tutto, \begin ... \end compresi)
+// original text of a node (for environments the position covers everything, \begin ... \end included)
 export const sourceOf = (ctx, node) =>
   node.position ? ctx.src.slice(node.position.start.offset, node.position.end.offset) : '';
 
 export const lineOf = (node) => node?.position?.start?.line ?? 0;
 
-// testo semplice di un argomento (nomi, chiavi, percorsi)
+// plain text of an argument (names, keys, paths)
 export function argText(arg) {
   if (!arg) return '';
   return (arg.content ?? []).map(nodeText).join('');
@@ -41,7 +41,7 @@ export function nodeText(n) {
 
 export const hasArg = (arg) => arg && (arg.openMark !== '' || (arg.content?.length ?? 0) > 0);
 
-// argomento i-esimo, saltando quelli di altri tipi ("s o m": 0 asterisco, 1 facoltativo, 2 obbligatorio)
+// i-th argument, following the signature ("s o m": 0 star, 1 optional, 2 mandatory)
 export const arg = (node, i) => node.args?.[i];
 
 export const envName = (n) => (typeof n.env === 'string' ? n.env : n.env?.content ?? '');

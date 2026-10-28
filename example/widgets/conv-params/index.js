@@ -2,8 +2,8 @@ import katex from 'katex';
 import { defineWidget, h, s, svgRoot, label, createPlayer } from 'texweb/client';
 import './style.css';
 
-// padding, stride e dilation: il kernel scorre sull'input e l'output si costruisce cella per cella.
-// controls sceglie quali parametri può modificare il lettore (le figure "piccole" ne mostrano uno solo).
+// padding, stride and dilation: the kernel slides over the input and the output is built cell by cell.
+// controls picks which parameters the reader can change ("small" figures show only one).
 
 const RANGES = {
   W: { min: 3, max: 10, name: 'Input W' },
@@ -17,8 +17,8 @@ const PRESETS = [
   { name: 'Padding', p: { W: 5, F: 3, P: 1, S: 1, d: 1 } },
   { name: 'Stride 2', p: { W: 7, F: 3, P: 0, S: 2, d: 1 } },
   { name: 'Dilation 2', p: { W: 7, F: 3, P: 0, S: 1, d: 2 } },
-  { name: 'Stride non valido', p: { W: 10, F: 3, P: 0, S: 5, d: 1 } },
-  { name: '…aggiusto con P = 1', p: { W: 10, F: 3, P: 1, S: 3, d: 1 } },
+  { name: 'Invalid stride', p: { W: 10, F: 3, P: 0, S: 5, d: 1 } },
+  { name: '…fixed with P = 1', p: { W: 10, F: 3, P: 1, S: 3, d: 1 } },
 ];
 
 export default defineWidget({
@@ -39,7 +39,7 @@ export default defineWidget({
 
 function convParams(root, { init, controls, presets }) {
   const p = { ...init };
-  let geo = null; // geometria corrente, ricalcolata a ogni modifica
+  let geo = null; // current geometry, recomputed on every change
   const arrowId = `ah-${Math.random().toString(36).slice(2, 8)}`;
 
   const stage = h('div', { class: 'cp-stage' });
@@ -57,7 +57,7 @@ function convParams(root, { init, controls, presets }) {
     return h('label', { class: 'sl' }, [h('span', { class: 'sl-name' }, r.name), input, out]);
   }));
 
-  const presetBar = presets && h('div', { class: 'seg wrap', role: 'group', 'aria-label': 'Esempi' },
+  const presetBar = presets && h('div', { class: 'seg wrap', role: 'group', 'aria-label': 'Examples' },
     PRESETS.map((pr) => h('button', {
       type: 'button', class: 'seg-btn',
       onclick: () => {
@@ -82,10 +82,10 @@ function convParams(root, { init, controls, presets }) {
     const width = Math.max(outX + Math.max(n, 1) * C + 12, 320);
     const height = oy + N * C + 14;
 
-    const svg = svgRoot(width, height, { 'aria-label': `Input ${W}×${W} con padding ${P}, kernel ${F}×${F}, stride ${S}, dilation ${d}` });
+    const svg = svgRoot(width, height, { 'aria-label': `${W}×${W} input with padding ${P}, kernel ${F}×${F}, stride ${S}, dilation ${d}` });
     svg.append(label(ox + (N * C) / 2, 20, P ? `input ${W}×${W}, P = ${P}` : `input ${W}×${W}`));
 
-    // celle dell'input: quelle di padding sono tratteggiate e valgono 0
+    // input cells: padding cells are dashed and hold 0
     const lastCovered = n > 0 ? (n - 1) * S + Fe - 1 : -1;
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
       const pad = r < P || c < P || r >= P + W || c >= P + W;
@@ -97,7 +97,7 @@ function convParams(root, { init, controls, presets }) {
       if (pad && C >= 18) svg.append(s('text', { x: ox + c * C + C / 2, y: oy + r * C + C / 2, class: 'cell-text faint', 'font-size': C * 0.38 }, '0'));
     }
 
-    // kernel: i pesi (celle piene) e l'area coperta (tratteggio)
+    // kernel: the weights (filled cells) and the covered area (dashed)
     const kg = s('g', { class: 'win-g' });
     kg.append(s('rect', { width: Fe * C, height: Fe * C, class: 'win hot dashed', rx: 3 }));
     for (let u = 0; u < F; u++) for (let v = 0; v < F; v++) {
@@ -106,7 +106,7 @@ function convParams(root, { init, controls, presets }) {
     svg.append(s('g', { transform: `translate(${ox},${oy})` }, kg));
 
     // output
-    svg.append(label(outX + (Math.max(n, 1) * C) / 2, 20, n > 0 ? `output ${n}×${n}` : 'nessun output'));
+    svg.append(label(outX + (Math.max(n, 1) * C) / 2, 20, n > 0 ? `output ${n}×${n}` : 'no output'));
     const outCells = [];
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
       const rect = s('rect', { x: outX + c * C, y: oy + r * C, width: C, height: C, class: 'cell out' });
@@ -122,7 +122,7 @@ function convParams(root, { init, controls, presets }) {
     stage.replaceChildren(svg);
     geo = { n, C, S, kg, outCells };
 
-    // formula, con i numeri al posto dei simboli
+    // the formula, with numbers instead of symbols
     const ok = Number.isInteger(raw) && raw >= 1;
     const dil = d > 1 ? `F_d = F + (F-1)(d-1) = ${Fe}, \\quad ` : '';
     const Fsym = d > 1 ? 'F_d' : 'F';
@@ -132,9 +132,9 @@ function convParams(root, { init, controls, presets }) {
       formula, { throwOnError: false, displayMode: false },
     );
     formula.classList.toggle('bad', !ok);
-    if (raw < 1) status.textContent = 'Il kernel è più grande dell\'input (con il padding): non c\'è nessuna posizione valida.';
-    else if (!ok) status.textContent = `Il risultato non è intero: lo stride non è compatibile. Il kernel si ferma prima del bordo e le celle in arancione non vengono mai coperte.`;
-    else status.textContent = `${F * F} pesi, che coprono un'area ${Fe}×${Fe}. ${n * n} posizioni del kernel, una per cella dell'output.`;
+    if (raw < 1) status.textContent = 'The kernel is larger than the (padded) input: there is no valid position.';
+    else if (!ok) status.textContent = 'The result is not an integer: the stride does not fit. The kernel stops before the border and the orange cells are never covered.';
+    else status.textContent = `${F * F} weights covering a ${Fe}×${Fe} area. ${n * n} kernel positions, one per output cell.`;
 
     player.setSteps(Math.max(1, n * n));
   }

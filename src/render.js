@@ -8,18 +8,19 @@ import { readBalanced } from './preamble.js';
 import { validateParams } from './widget-params.js';
 import { closest } from './diagnostics.js';
 import { authorShort, sortKey, formatEntry } from './bib.js';
+import { DEFAULT_BOXES, getLocale } from './locale.js';
 
-// segnaposto risolti alla fine, quando tutti i \label e i \cite sono noti
+// placeholders resolved at the end, once every \label and \cite is known
 const PH = '\u0001';
 const CAPTION_MARK = '\u0002CAPTION\u0002';
 
 export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 export const escAttr = (s) => esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 export const slugify = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-  .replace(/<[^>]*>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'pagina';
+  .replace(/<[^>]*>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'page';
 const stripTags = (h) => h.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
-// tipografia del testo semplice: virgolette, trattini, spazi non separabili
+// plain-text typography: quotes, dashes, non-breaking spaces
 function typo(s) {
   return esc(s)
     .replace(/``/g, '“').replace(/''/g, '”').replace(/`/g, '‘')
@@ -28,8 +29,8 @@ function typo(s) {
     .replace(/[ \t\n]+/g, ' ');
 }
 
-// raccoglie il testo in paragrafi: il testo e gli elementi in linea finiscono in <p>,
-// gli elementi a blocco (figure, formule, elenchi) chiudono il paragrafo corrente
+// Collects text into paragraphs: text and inline elements go into <p>,
+// block elements (figures, display math, lists) close the current paragraph.
 class Flow {
   constructor() { this.parts = []; this.para = ''; this.buf = ''; }
   text(s) { this.buf += s; }
@@ -52,24 +53,12 @@ class InlineFlow extends Flow {
   finish() { this.flushText(); return this.para.trim(); }
 }
 
-// il flusso principale scrive direttamente nella pagina corrente (che cambia a ogni \chapter)
+// the main flow writes straight into the current page, which changes at every \chapter
 class PageFlow extends Flow {
   constructor(r) { super(); this.r = r; }
   emit(h) { this.r.page.chunks.push(h); }
 }
 
-const DEFAULT_BOXES = {
-  definizione: { title: 'Definizione', numbered: true, style: 'accent' },
-  lemma: { title: 'Lemma', numbered: true, style: 'lemma' },
-  teorema: { title: 'Teorema', numbered: true, style: 'lemma' },
-  corollario: { title: 'Corollario', numbered: true, style: 'lemma' },
-  esercizio: { title: 'Esercizio', numbered: true, style: 'ex' },
-  osservazione: { title: 'Osservazione', numbered: false, style: 'obs' },
-  esempiofig: { title: 'Esempio', numbered: false, style: 'plain', split: 'tcblower' },
-  proof: { title: 'Dimostrazione', numbered: false, style: 'proof' },
-};
-
-const FLOAT_NAMES = { figure: 'Figura', table: 'Tabella', algorithm: 'Algoritmo' };
 const MATH_ENVS = new Set(['equation', 'equation*', 'align', 'align*', 'gather', 'gather*', 'multline', 'multline*', 'flalign', 'flalign*', 'eqnarray', 'eqnarray*', 'displaymath', 'math']);
 
 export class Renderer {
@@ -80,14 +69,15 @@ export class Renderer {
     this.bib = bib;
     this.widgets = widgets;
     this.config = config;
+    this.t = getLocale(config.lang);
     this.boxes = { ...DEFAULT_BOXES, ...config.boxes };
-    this.floatNames = { ...FLOAT_NAMES, ...config.floatNames };
-    this.katexMacros = config.katexMacros;
+    this.floatNames = { ...this.t.floats, ...config.floatNames };
+    this.katexMacros = config.katexMacros ?? {};
 
     this.pages = [];
-    this.page = this.newPage({ slug: 'index', title: preamble.meta.title ?? config.title ?? 'Appunti', kind: 'index' });
-    this.counters = { chapter: 0, section: 0, subsection: 0, subsubsection: 0, equation: 0, footnote: 0 };
-    this.within = {}; // contatori numerati per capitolo: figure, table, definizione, ...
+    this.page = this.newPage({ slug: 'index', title: preamble.meta.title ?? config.title ?? this.t.untitled, kind: 'index' });
+    this.counters = { chapter: 0, section: 0, subsection: 0, subsubsection: 0, equation: 0 };
+    this.within = {}; // counters numbered within the chapter: figure, table, definition, ...
     this.appendix = false;
     this.part = null;
     this.labels = new Map();
@@ -100,7 +90,7 @@ export class Renderer {
     this.bibPage = null;
     this.ids = 0;
 
-    // le macro del preambolo con argomenti vanno dichiarate al parser
+    // preamble macros with arguments must be declared to the parser
     this.extra = { macros: {}, envs: {} };
     for (const [name, m] of Object.entries(preamble.macros)) {
       if (m.nargs) this.extra.macros[name] = (m.default !== undefined ? 'o ' : '') + 'm '.repeat(m.nargs - (m.default !== undefined ? 1 : 0)).trim();
@@ -108,12 +98,12 @@ export class Renderer {
     for (const name of Object.keys(this.boxes)) this.extra.envs[name] = 'o';
   }
 
-  // ------------------------------------------------------------------ documento
+  // ------------------------------------------------------------------ document
   renderDocument(mainFile) {
     const ctx = this.parse(mainFile);
     const doc = ctx.ast.content.find((n) => n.type === 'environment' && envName(n) === 'document');
     if (!doc) {
-      this.diag.error(mainFile, 0, 'manca \\begin{document}');
+      this.diag.error(mainFile, 0, 'missing \\begin{document}');
       return;
     }
     const flow = new PageFlow(this);
@@ -127,7 +117,7 @@ export class Renderer {
     try {
       return parseFile(file, this.extra);
     } catch (e) {
-      this.diag.error(file, e.location?.start?.line ?? 0, `errore di sintassi: ${e.message}`);
+      this.diag.error(file, e.location?.start?.line ?? 0, `syntax error: ${e.message}`);
       return { ast: { content: [] }, src: '', file };
     }
   }
@@ -140,7 +130,7 @@ export class Renderer {
     return page;
   }
 
-  // ------------------------------------------------------------------ numerazione
+  // ------------------------------------------------------------------ numbering
   chapterLabel() {
     return this.appendix ? String.fromCharCode(64 + this.counters.chapter) : String(this.counters.chapter);
   }
@@ -155,12 +145,12 @@ export class Renderer {
   setTarget(num, id, kind) { this.target = { num, id, kind, page: this.page.slug }; }
 
   defineLabel(key, ctx, node) {
-    if (this.labels.has(key)) this.diag.warn(ctx.file, lineOf(node), `etichetta "${key}" definita due volte`);
-    if (!this.target) this.diag.warn(ctx.file, lineOf(node), `\\label{${key}} non segue niente di numerato`);
+    if (this.labels.has(key)) this.diag.warn(ctx.file, lineOf(node), `label "${key}" defined twice`);
+    if (!this.target) this.diag.warn(ctx.file, lineOf(node), `\\label{${key}} does not follow anything numbered`);
     this.labels.set(key, this.target ?? { num: '?', id: '', kind: 'none', page: this.page.slug });
   }
 
-  // ------------------------------------------------------------------ rendering di liste di nodi
+  // ------------------------------------------------------------------ rendering node lists
   renderInto(nodes, ctx, flow) {
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
@@ -188,7 +178,7 @@ export class Renderer {
   inlineArg(a, ctx) { return this.inline(a?.content, ctx); }
 
   group(n, ctx) {
-    // dichiarazioni dentro un gruppo: {\bfseries testo}, {\color{Accent} testo}
+    // declarations inside a group: {\bfseries text}, {\color{Accent} text}
     const content = [...n.content];
     const wraps = [];
     while (content.length) {
@@ -212,7 +202,7 @@ export class Renderer {
     return this.preamble.colors[name] ? `var(--tex-${name})` : name.replace(/!.*/, '');
   }
 
-  // ------------------------------------------------------------------ macro
+  // ------------------------------------------------------------------ macros
   macro(n, ctx, flow, nodes, i) {
     const name = n.content;
     const a = n.args ?? [];
@@ -222,7 +212,7 @@ export class Renderer {
 
     if (name in TEXT_SYMBOLS) { flow.inline(TEXT_SYMBOLS[name]); return; }
     if (name in ACCENTS) {
-      // \'e: l'accento si combina con il carattere che segue
+      // \'e: the accent combines with the following character
       const next = nodes[i + 1];
       const txt = next?.type === 'string' ? next.content : next?.type === 'group' ? argText(next) : '';
       if (txt) {
@@ -235,20 +225,20 @@ export class Renderer {
     if (IGNORED_MACROS.has(name)) return;
     if (this.preamble.macros[name]) { this.expandUserMacro(n, ctx, flow); return; }
 
-    const guess = closest(name, [...Object.keys(this.macroHandlers), ...Object.keys(this.preamble.macros)]);
-    this.diag.error(ctx.file, line, `comando sconosciuto \\${name}${guess ? ` (forse \\${guess}?)` : ''}`);
-    flow.inline(`<code class="tw-unknown" title="comando sconosciuto">\\${esc(name)}</code>`);
+    const guess = closest(name, [...Object.keys(this.macroHandlers), ...Object.keys(this.preamble.macros), ...IGNORED_MACROS, ...Object.keys(TEXT_SYMBOLS)].filter((m) => m.length > 2));
+    this.diag.error(ctx.file, line, `unknown command \\${name}${guess ? ` (did you mean \\${guess}?)` : ''}`);
+    flow.inline(`<code class="tw-unknown" title="unknown command">\\${esc(name)}</code>`);
   }
 
-  // macro definita nel preambolo con \newcommand: si sostituiscono gli argomenti e si rende il risultato
+  // a macro defined in the preamble with \newcommand: substitute the arguments and render the result
   expandUserMacro(n, ctx, flow) {
     const m = this.preamble.macros[n.content];
-    if (m.mathOnly) { this.diag.error(ctx.file, lineOf(n), `\\${n.content} si usa solo in matematica`); return; }
+    if (m.mathOnly) { this.diag.error(ctx.file, lineOf(n), `\\${n.content} can only be used in math mode`); return; }
     let body = m.body;
     const args = (n.args ?? []).map((x) => (hasArg(x) ? sourceOfArg(ctx, x) : null));
     for (let k = 0; k < m.nargs; k++) body = body.replaceAll(`#${k + 1}`, args[k] ?? m.default ?? '');
     const sub = parseString(body, ctx.file, this.extra);
-    // i nodi del corpo hanno posizioni relative al corpo: errori e sorgenti puntano lì
+    // positions in the expanded body are relative to the body itself
     this.renderInto(sub.ast.content, { ...sub, file: ctx.file, lineOffset: lineOf(n) }, flow);
   }
 
@@ -309,22 +299,22 @@ export class Renderer {
       printbibliography: function (n, ctx, flow, a) { this.bibliography(n, ctx, flow, a); },
 
       caption: function (n, ctx, flow, a) {
-        if (!ctx.float) { this.diag.error(ctx.file, lineOf(n), '\\caption fuori da una figura o tabella'); return; }
+        if (!ctx.float) { this.diag.error(ctx.file, lineOf(n), '\\caption outside a figure or table'); return; }
         ctx.float.caption = this.inlineArg(a[1], ctx);
         flow.block(CAPTION_MARK);
       },
       includegraphics: function (n, ctx, flow, a) { flow.inline(this.includegraphics(n, ctx, a)); },
-      item: function (n, ctx) { this.diag.error(ctx.file, lineOf(n), '\\item fuori da un elenco'); },
+      item: function (n, ctx) { this.diag.error(ctx.file, lineOf(n), '\\item outside a list'); },
       input: function (n, ctx, flow, a) { this.input(argText(a[0]), n, ctx, flow); },
       include: function (n, ctx, flow, a) { this.input(argText(a[0]), n, ctx, flow); },
     };
     return this._handlers;
   }
 
-  // ------------------------------------------------------------------ struttura
+  // ------------------------------------------------------------------ structure
   chapter(n, ctx, flow, a) {
     if (!(flow instanceof PageFlow)) {
-      this.diag.error(ctx.file, lineOf(n), '\\chapter dentro un ambiente');
+      this.diag.error(ctx.file, lineOf(n), '\\chapter inside an environment');
       return;
     }
     flow.parbreak();
@@ -339,7 +329,7 @@ export class Renderer {
     }
     this.page = this.newPage({ slug: slugify(stripTags(title)), title, number, kind: star ? 'unnumbered' : 'chapter' });
     this.setTarget(number ?? stripTags(title), 'top', 'chapter');
-    const kicker = number ? `<p class="tw-chapter-num">${this.appendix ? 'Appendice' : 'Capitolo'} ${number}</p>` : '';
+    const kicker = number ? `<p class="tw-chapter-num">${this.appendix ? this.t.appendix : this.t.chapter} ${number}</p>` : '';
     this.page.chunks.push(`<header class="tw-chapter-head">${kicker}<h1>${title}</h1></header>`);
   }
 
@@ -368,14 +358,14 @@ export class Renderer {
     const base = path.resolve(this.root, name.trim());
     const file = fs.existsSync(base) ? base : `${base}.tex`;
     if (!fs.existsSync(file)) {
-      this.diag.error(ctx.file, lineOf(n), `file non trovato: ${name}`);
+      this.diag.error(ctx.file, lineOf(n), `file not found: ${name}`);
       return;
     }
     const sub = this.parse(file);
     this.renderInto(sub.ast.content, sub, flow);
   }
 
-  // ------------------------------------------------------------------ ambienti
+  // ------------------------------------------------------------------ environments
   environment(n, ctx, flow) {
     const name = envName(n);
     if (SKIPPED_ENVS.has(name)) return;
@@ -396,7 +386,7 @@ export class Renderer {
     if (MATH_ENVS.has(name)) return this.mathEnv(n, ctx, flow);
     if (name === 'quote' || name === 'quotation') { flow.block(`<blockquote>${this.block(n.content, ctx)}</blockquote>`); return; }
 
-    this.diag.error(ctx.file, lineOf(n), `ambiente sconosciuto "${name}"`);
+    this.diag.error(ctx.file, lineOf(n), `unknown environment "${name}"`);
     flow.block(`<div class="tw-unknown-env" data-env="${escAttr(name)}">${this.block(n.content, ctx)}</div>`);
   }
 
@@ -482,10 +472,12 @@ export class Renderer {
 
   box(n, ctx, flow, name, def) {
     const title = hasArg(n.args?.[0]) ? this.inlineArg(n.args[0], ctx) : '';
+    const kind = def.kind ?? name;
+    const label = def.title ?? this.t.boxes[kind] ?? name;
     const id = this.newId(name);
     let num = null;
-    if (def.numbered) { num = this.stepWithin(def.counter ?? name); this.setTarget(num, id, name); }
-    const head = `<span class="tw-box-title">${def.title}${num ? ` ${num}` : ''}${title ? ` (${title})` : ''}.</span> `;
+    if (def.numbered) { num = this.stepWithin(def.counter ?? kind); this.setTarget(num, id, kind); }
+    const head = `<span class="tw-box-title">${label}${num ? ` ${num}` : ''}${title ? ` (${title})` : ''}.</span> `;
     let inner;
     const splitAt = def.split ? n.content.findIndex((x) => x.type === 'macro' && x.content === def.split) : -1;
     if (splitAt >= 0) {
@@ -493,10 +485,10 @@ export class Renderer {
       const right = this.block(n.content.slice(splitAt + 1), ctx);
       inner = `<div class="tw-box-split"><div>${runIn(head, left)}</div><div>${right}</div></div>`;
     } else inner = runIn(head, this.block(n.content, ctx));
-    flow.block(`<div class="tw-box tw-box-${def.style}" id="${id}">${inner}</div>`);
+    flow.block(`<div class="tw-box tw-box-${def.style ?? 'plain'}" id="${id}">${inner}</div>`);
   }
 
-  listing(n, ctx, flow, name) {
+  listing(n, ctx, flow) {
     let code = typeof n.content === 'string' ? n.content : Array.isArray(n.content) && n.content.length === 1 && n.content[0].type === 'string'
       ? n.content[0].content
       : sourceOf(ctx, n).replace(/^\\begin\{[^}]*\}(\[[^\]]*\])?/, '').replace(/\\end\{[^}]*\}$/, '');
@@ -511,7 +503,6 @@ export class Renderer {
     const lines = [];
     let depth = 0;
     let cur = null;
-    const stack = [];
     const start = (kw, extraDepth = 0) => { cur = { depth: depth + extraDepth, kw, nodes: [], tail: '', comment: '' }; lines.push(cur); };
     for (const node of n.content) {
       if (node.type === 'macro') {
@@ -526,7 +517,7 @@ export class Renderer {
           start(b.open);
           if (m === 'Function' || m === 'Procedure') cur.tail = `<span class="tw-sc">${this.inlineArg(a[0], ctx)}</span>(${this.inlineArg(a[1], ctx)})`;
           else if (a[0]) cur.tail = `${this.inlineArg(a[0], ctx)}${b.suffix ? ` <b>${b.suffix}</b>` : ''}`;
-          stack.push(m); depth++;
+          depth++;
           continue;
         }
         if (m === 'ElsIf' || m === 'Else') {
@@ -534,8 +525,8 @@ export class Renderer {
           if (m === 'ElsIf') cur.tail = `${this.inlineArg(a[0], ctx)} <b>then</b>`;
           continue;
         }
-        if (ALGO_CLOSERS[m]) { depth = Math.max(0, depth - 1); stack.pop(); start(ALGO_BLOCKS[ALGO_CLOSERS[m]].end); continue; }
-        if (m === 'Until') { depth = Math.max(0, depth - 1); stack.pop(); start('until'); cur.tail = this.inlineArg(a[0], ctx); continue; }
+        if (ALGO_CLOSERS[m]) { depth = Math.max(0, depth - 1); start(ALGO_BLOCKS[ALGO_CLOSERS[m]].end); continue; }
+        if (m === 'Until') { depth = Math.max(0, depth - 1); start('until'); cur.tail = this.inlineArg(a[0], ctx); continue; }
         if (m === 'Comment') { if (cur) cur.comment = this.inlineArg(a[0], ctx); continue; }
         if (m === 'Call') { (cur ?? (start(''), cur)).nodes.push({ type: 'raw', html: `<span class="tw-sc">${this.inlineArg(a[0], ctx)}</span>(${this.inlineArg(a[1], ctx)})` }); continue; }
       }
@@ -551,13 +542,13 @@ export class Renderer {
     flow.block(`<div class="tw-algo">${html.join('')}</div>`);
   }
 
-  // ------------------------------------------------------------------ matematica
+  // ------------------------------------------------------------------ math
   math(tex, display, ctx, node) {
     const opts = { displayMode: display, macros: { ...this.katexMacros }, strict: 'ignore', output: 'html' };
     try {
       return katex.renderToString(tex, { ...opts, throwOnError: true });
     } catch (e) {
-      this.diag.error(ctx.file, lineOf(node), `formula: ${e.message.replace(/^KaTeX parse error: /, '')}`);
+      this.diag.error(ctx.file, lineOf(node), `math: ${e.message.replace(/^KaTeX parse error: /, '')}`);
       return katex.renderToString(tex, { ...opts, throwOnError: false });
     }
   }
@@ -575,8 +566,7 @@ export class Renderer {
     inner = inner.replace(/\\(nonumber|notag)\b/g, '');
     const base = name.replace('*', '');
     if (base === 'align' || base === 'flalign' || base === 'eqnarray') inner = `\\begin{aligned}${inner}\\end{aligned}`;
-    if (base === 'gather') inner = `\\begin{gathered}${inner}\\end{gathered}`;
-    if (base === 'multline') inner = `\\begin{gathered}${inner}\\end{gathered}`;
+    if (base === 'gather' || base === 'multline') inner = `\\begin{gathered}${inner}\\end{gathered}`;
     let id = '';
     if (!starred && base !== 'displaymath' && base !== 'math') {
       this.counters.equation++;
@@ -589,7 +579,7 @@ export class Renderer {
     flow.block(this.displayMath(inner, ctx, n, id));
   }
 
-  // ------------------------------------------------------------------ riferimenti e citazioni
+  // ------------------------------------------------------------------ references and citations
   refPH(key, kind, ctx, node) {
     this.refs.push({ key: key.trim(), kind, file: ctx.file, line: lineOf(node) });
     return `${PH}R${this.refs.length - 1}${PH}`;
@@ -605,21 +595,21 @@ export class Renderer {
 
   bibliography(n, ctx, flow, a) {
     const opt = argText(a?.[0]);
-    const title = (opt.match(/title=\{?([^},]*)\}?/) ?? [])[1] ?? 'Bibliografia';
+    const title = (opt.match(/title=\{?([^},]*)\}?/) ?? [])[1] ?? this.t.bibliography;
     if (flow instanceof PageFlow) flow.parbreak();
     this.bibPage = this.newPage({ slug: slugify(title), title: esc(title), kind: 'bibliography' });
     this.bibPage.chunks.push(`<header class="tw-chapter-head"><h1>${esc(title)}</h1></header>`, `${PH}BIB${PH}`);
     this.page = this.bibPage;
   }
 
-  // ------------------------------------------------------------------ figure: immagini, TikZ, widget
+  // ------------------------------------------------------------------ figures: images, TikZ, widgets
   includegraphics(n, ctx, a) {
     let p = argText(a[1]).trim();
     if (p.startsWith('\\') && this.preamble.macros[p.slice(1)]) p = this.preamble.macros[p.slice(1)].body.trim();
     const abs = ['', '.svg', '.png', '.jpg', '.jpeg', '.pdf'].map((e) => path.resolve(this.root, p + e)).find((f) => fs.existsSync(f) && fs.statSync(f).isFile());
     if (!abs) {
-      this.diag.error(ctx.file, lineOf(n), `immagine non trovata: ${p}`);
-      return `<span class="tw-missing">[immagine mancante: ${esc(p)}]</span>`;
+      this.diag.error(ctx.file, lineOf(n), `image not found: ${p}`);
+      return `<span class="tw-missing">[${this.t.missingImage}: ${esc(p)}]</span>`;
     }
     const rel = path.relative(this.root, abs).replace(/\\/g, '/');
     const out = rel.endsWith('.pdf') ? rel.replace(/\.pdf$/, '.png') : rel;
@@ -644,41 +634,40 @@ export class Renderer {
     let params = {};
     if (!def) {
       const guess = closest(name, [...this.widgets.keys()]);
-      this.diag.error(ctx.file, lineOf(n), `widget sconosciuto "${name}"${guess ? ` (forse "${guess}"?)` : ''}`);
+      this.diag.error(ctx.file, lineOf(n), `unknown widget "${name}"${guess ? ` (did you mean "${guess}"?)` : ''}`);
     } else {
       params = validateParams(def, raw, (msg) => this.diag.error(ctx.file, lineOf(n), msg));
       this.usedWidgets.add(name);
     }
-    // la figura alternativa per il PDF è obbligatoria: è quello che vede chi legge il PDF
+    // the PDF figure is mandatory: it is what readers of the PDF see
     const empty = n.content.every((x) => x.type === 'whitespace' || x.type === 'parbreak' || x.type === 'comment');
     if (empty) {
-      this.diag.error(ctx.file, lineOf(n), `widget "${name}": manca la figura per il PDF (va tra \\begin{widget} e \\end{widget}, ad esempio un tikzpicture o un \\includegraphics)`);
+      this.diag.error(ctx.file, lineOf(n), `widget "${name}": missing PDF figure (put it between \\begin{widget} and \\end{widget}, e.g. a tikzpicture or an \\includegraphics)`);
     }
     const fallback = this.block(n.content, ctx);
     flow.block(`<div class="tw-widget" data-widget="${escAttr(name)}" data-params="${escAttr(JSON.stringify(params))}"><div class="tw-fallback">${fallback}</div></div>`);
   }
 
-  // ------------------------------------------------------------------ risoluzione finale
+  // ------------------------------------------------------------------ final resolution
   finalize() {
-    // numeri della bibliografia: le voci citate, in ordine nome-titolo-anno come biblatex
+    // bibliography numbers: the cited entries, in biblatex's name-title-year order
     const cited = new Set();
     for (const c of this.cites) for (const k of c.keys) {
       if (this.bib.has(k)) cited.add(k);
-      else this.diag.error(c.file, c.line, `citazione sconosciuta "${k}"`);
+      else this.diag.error(c.file, c.line, `unknown citation "${k}"`);
     }
     const order = [...cited].map((k) => this.bib.get(k)).sort((x, y) => sortKey(x).localeCompare(sortKey(y)));
     const num = new Map(order.map((e, i) => [e.key, i + 1]));
-    const bibSlug = this.bibPage?.slug ?? 'bibliografia';
+    const bibSlug = this.bibPage?.slug ?? 'bibliography';
     const link = (k, text) => `<a class="tw-cite" href="${bibSlug}.html#bib-${escAttr(k)}">${text}</a>`;
 
     const resolveRef = ({ key, kind, file, line }) => {
       const t = this.labels.get(key);
-      if (!t) { this.diag.error(file, line, `riferimento a un'etichetta inesistente "${key}"`); return '<span class="tw-badref">??</span>'; }
+      if (!t) { this.diag.error(file, line, `reference to an undefined label "${key}"`); return '<span class="tw-badref">??</span>'; }
       let text = esc(t.num);
       if (kind === 'eqref') text = `(${text})`;
       if (kind === 'auto' || kind === 'Auto') {
-        const names = { figure: 'figura', table: 'tabella', algorithm: 'algoritmo', equation: 'equazione', chapter: 'capitolo', section: 'sezione', subsection: 'sezione', subsubsection: 'sezione' };
-        let w = names[t.kind] ?? this.boxes[t.kind]?.title?.toLowerCase() ?? '';
+        let w = this.t.refNames[t.kind] ?? this.t.boxes[t.kind]?.toLowerCase() ?? '';
         if (kind === 'Auto') w = w.charAt(0).toUpperCase() + w.slice(1);
         text = `${w} ${text}`.trim();
       }
@@ -690,10 +679,10 @@ export class Renderer {
       const known = keys.filter((k) => num.has(k));
       if (!known.length) return '<span class="tw-badref">[?]</span>';
       if (kind === 'title') return known.map((k) => link(k, `<em>${esc(this.bib.get(k).fields.title ?? k)}</em>`)).join(', ');
-      if (kind === 'author') return known.map((k) => esc(authorShort(this.bib.get(k)))).join(', ');
+      if (kind === 'author') return known.map((k) => esc(authorShort(this.bib.get(k), this.config.lang))).join(', ');
       const nums = known.map((k) => link(k, num.get(k))).join(', ');
       const bracket = `[${pre ? `${pre} ` : ''}${nums}${post ? `, ${post}` : ''}]`;
-      if (kind === 'textcite') return `${known.map((k) => esc(authorShort(this.bib.get(k)))).join(', ')} ${bracket}`;
+      if (kind === 'textcite') return `${known.map((k) => esc(authorShort(this.bib.get(k), this.config.lang))).join(', ')} ${bracket}`;
       return bracket;
     };
 
@@ -709,7 +698,7 @@ export class Renderer {
   }
 }
 
-// ---------------------------------------------------------------------- helper
+// ---------------------------------------------------------------------- helpers
 function sourceOfArg(ctx, a) {
   const c = a?.content ?? [];
   if (!c.length) return '';
@@ -726,7 +715,7 @@ function containsMacro(nodes, name) {
   return false;
 }
 
-// il titolo di un box va all'inizio del primo paragrafo, come in tcolorbox
+// a box title goes at the start of the first paragraph, as in tcolorbox
 function runIn(head, html) {
   return html.startsWith('<p>') ? `<p>${head}${html.slice(3)}` : `<p>${head}</p>${html}`;
 }

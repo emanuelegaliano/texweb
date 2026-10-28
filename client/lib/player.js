@@ -1,15 +1,16 @@
 import { h, prefersReducedMotion } from './dom.js';
+import { t } from './i18n.js';
 
-// velocità delle animazioni: una sola per tutta la pagina (chi legge a 2× lo vuole ovunque),
-// ricordata tra una visita e l'altra. Finisce anche nella variabile CSS --speed, che le
-// transizioni usano per accorciarsi o allungarsi: transition: transform calc(0.5s / var(--speed, 1))
-// Il modulo viene importato anche in Node (texweb legge le definizioni dei widget per validare
-// i parametri): document e localStorage si toccano solo nel browser.
+// Animation speed: one for the whole page (whoever reads at 2× wants it everywhere),
+// remembered across visits. It also ends up in the CSS variable --speed, which transitions use
+// to get shorter or longer: transition: transform calc(0.5s / var(--speed, 1))
+// This module is imported in Node too (texweb loads widget definitions to validate their
+// parameters): document and localStorage are only touched in the browser.
 export const SPEEDS = [0.5, 1, 2];
 const inBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
 let speed = 1;
 if (inBrowser) {
-  try { const s = Number(window.localStorage.getItem('texweb-speed')); if (SPEEDS.includes(s)) speed = s; } catch { /* storage non disponibile */ }
+  try { const s = Number(window.localStorage.getItem('texweb-speed')); if (SPEEDS.includes(s)) speed = s; } catch { /* storage unavailable */ }
 }
 const players = new Set();
 const applySpeed = () => { if (inBrowser) document.documentElement.style.setProperty('--speed', speed); };
@@ -18,17 +19,17 @@ applySpeed();
 export function setSpeed(s) {
   if (!SPEEDS.includes(s)) return;
   speed = s;
-  try { window.localStorage.setItem('texweb-speed', String(s)); } catch { /* idem */ }
+  try { window.localStorage.setItem('texweb-speed', String(s)); } catch { /* same */ }
   applySpeed();
   players.forEach((p) => p.syncSpeed());
 }
 
 export const getSpeed = () => speed;
 
-// controlli comuni per le animazioni a passi: play/pausa, passo avanti/indietro, reset, velocità.
-// onStep(i) disegna lo stato i (da 0 a steps - 1). Parte da solo la prima volta che
-// la figura diventa visibile, a meno che l'utente non preferisca ridurre le animazioni.
-// interval è la durata di un passo a velocità 1×.
+// Shared controls for step animations: play/pause, step forward/back, restart, speed.
+// onStep(i) draws state i (from 0 to steps - 1). Playback starts by itself the first time the
+// figure becomes visible, unless the reader prefers reduced motion.
+// interval is the duration of one step at 1× speed.
 export function createPlayer({ steps, onStep, interval = 900, autoplay = true, loopPause = 1600 }) {
   let i = 0;
   let n = steps;
@@ -39,23 +40,23 @@ export function createPlayer({ steps, onStep, interval = 900, autoplay = true, l
   const btn = (label, title, onclick) =>
     h('button', { class: 'btn icon', type: 'button', title, 'aria-label': title, onclick }, label);
 
-  const playBtn = btn('▶', 'Riproduci', () => (timer ? pause() : play()));
-  const prevBtn = btn('‹', 'Passo indietro', () => { pause(); go(i - 1); });
-  const nextBtn = btn('›', 'Passo avanti', () => { pause(); go(i + 1); });
-  const resetBtn = btn('↺', 'Ricomincia', () => { pause(); go(0); });
+  const playBtn = btn('▶', t('play'), () => (timer ? pause() : play()));
+  const prevBtn = btn('‹', t('prev'), () => { pause(); go(i - 1); });
+  const nextBtn = btn('›', t('next'), () => { pause(); go(i + 1); });
+  const resetBtn = btn('↺', t('restart'), () => { pause(); go(0); });
   const counter = h('span', { class: 'counter' });
   const bar = h('div', { class: 'progress' }, h('div', { class: 'progress-fill' }));
   const speedBtns = SPEEDS.map((s) => h('button', {
-    type: 'button', class: 'speed-btn', 'aria-label': `Velocità ${s}×`, title: `Velocità ${s}×`,
+    type: 'button', class: 'speed-btn', 'aria-label': `${t('speed')} ${t('speedValue')(s)}`, title: `${t('speed')} ${t('speedValue')(s)}`,
     onclick: () => setSpeed(s),
-  }, `${String(s).replace('.', ',')}×`));
-  const speedBox = h('div', { class: 'speed', role: 'group', 'aria-label': 'Velocità' }, speedBtns);
+  }, t('speedValue')(s)));
+  const speedBox = h('div', { class: 'speed', role: 'group', 'aria-label': t('speed') }, speedBtns);
 
   const el = h('div', { class: 'player' }, [resetBtn, prevBtn, playBtn, nextBtn, bar, counter, speedBox]);
 
   function syncSpeed() {
     speedBtns.forEach((b, k) => b.classList.toggle('on', SPEEDS[k] === speed));
-    // se sta andando, il prossimo passo arriva già con la nuova velocità
+    // while playing, the next step already comes at the new speed
     if (timer) { clearTimeout(timer); timer = setTimeout(tick, wait(interval)); }
   }
 
@@ -77,7 +78,7 @@ export function createPlayer({ steps, onStep, interval = 900, autoplay = true, l
       go(i + 1);
       timer = setTimeout(tick, wait(interval));
     } else {
-      // pausa sull'ultimo passo, poi ricomincia
+      // pause on the last step, then start over
       timer = setTimeout(() => { go(0); timer = setTimeout(tick, wait(interval)); }, wait(loopPause));
     }
   }
@@ -85,7 +86,7 @@ export function createPlayer({ steps, onStep, interval = 900, autoplay = true, l
   function play() {
     if (timer) return;
     playBtn.textContent = '❚❚';
-    playBtn.title = 'Pausa';
+    playBtn.title = t('pause');
     if (i === n - 1) go(0);
     timer = setTimeout(tick, wait(interval) / 2);
   }
@@ -94,10 +95,10 @@ export function createPlayer({ steps, onStep, interval = 900, autoplay = true, l
     clearTimeout(timer);
     timer = null;
     playBtn.textContent = '▶';
-    playBtn.title = 'Riproduci';
+    playBtn.title = t('play');
   }
 
-  // cambia il numero di passi (es. quando l'utente modifica i parametri)
+  // changes the number of steps (e.g. when the reader changes the parameters)
   function setSteps(k, { keep = false } = {}) {
     n = Math.max(1, k);
     go(keep ? i : 0);

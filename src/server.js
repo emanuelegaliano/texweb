@@ -3,18 +3,18 @@ import path from 'node:path';
 import { createServer, build as viteBuild } from 'vite';
 import { FRAMEWORK, loadConfig, generate, findWidgets } from './site.js';
 
-// su macOS il disco non distingue maiuscole e minuscole, Vite sì: si autorizzano sia il
-// percorso scritto dall'utente sia quello reale (ad esempio ~/Documents/misc e ~/Documents/MIsc)
+// macOS disks are case-insensitive but Vite is not: allow both the path as typed by the
+// user and the real one (e.g. ~/Documents/misc and ~/Documents/MIsc)
 const variants = (p) => [...new Set([p, fs.realpathSync.native(p)])];
 
-// configurazione di Vite comune a dev e build: la radice è la cartella generata,
-// i widget del progetto importano 'texweb/client' e le dipendenze del framework
+// Vite configuration shared by dev and build: the root is the generated folder,
+// the project's widgets import 'texweb/client' and the framework's dependencies
 function viteConfig(root, cfg, { server, ...extra } = {}) {
   return {
     root: cfg.siteDir,
     base: './',
     configFile: false,
-    cacheDir: path.join(cfg.cacheDir, 'vite'), // niente .vite/ sparse nella cartella degli appunti
+    cacheDir: path.join(cfg.cacheDir, 'vite'), // no stray .vite/ in the notes folder
     logLevel: 'warn',
     appType: 'mpa',
     resolve: { alias: { 'texweb/client': path.join(FRAMEWORK, 'client', 'index.js') } },
@@ -24,8 +24,8 @@ function viteConfig(root, cfg, { server, ...extra } = {}) {
   };
 }
 
-// i progetti di appunti non hanno node_modules: le dipendenze dei widget (katex, three, ...)
-// si cercano tra quelle del framework
+// notes projects have no node_modules: widget dependencies (katex, three, ...)
+// are resolved from the framework's
 function frameworkDeps() {
   const anchor = path.join(FRAMEWORK, 'client', 'index.js');
   return {
@@ -46,7 +46,7 @@ function report(result, root) {
   const out = diag.format();
   if (out) console.log(out);
   const e = diag.errors.length, w = diag.items.length - e;
-  console.log(`  ${pages.length} pagine in ${ms} ms${e || w ? ` · ${e} errori, ${w} avvisi` : ''}`);
+  console.log(`  ${pages.length} pages in ${ms} ms${e || w ? ` · ${e} errors, ${w} warnings` : ''}`);
 }
 
 export async function dev(root, { port = 5180, overrides = {} } = {}) {
@@ -60,16 +60,16 @@ export async function dev(root, { port = 5180, overrides = {} } = {}) {
     try {
       report(await generate(root, cfg, server, { dev: true }), root);
     } catch (e) {
-      console.error(`  generazione fallita: ${e.stack ?? e}`);
+      console.error(`  generation failed: ${e.stack ?? e}`);
     }
   };
-  // prima listen, poi la generazione: il caricamento dei widget con CSS richiede il server avviato
+  // listen first, then generate: loading widgets that import CSS needs a running server
   await server.listen();
   await regen();
   const url = server.resolvedUrls.local[0];
-  console.log(`\n  texweb pronto su ${url}\n`);
+  console.log(`\n  texweb ready at ${url}\n`);
 
-  // si rigenera quando cambia un .tex, un .bib, la configurazione o un widget
+  // regenerate when a .tex, a .bib, the configuration or a widget changes
   let timer = null;
   const watched = (f) => !f.startsWith(cfg.cacheDir) && !f.includes(`${path.sep}node_modules${path.sep}`)
     && (/\.(tex|bib|sty)$/.test(f) || f.endsWith('texweb.config.js') || f.startsWith(cfg.widgetsDir));
@@ -78,7 +78,7 @@ export async function dev(root, { port = 5180, overrides = {} } = {}) {
     if (!watched(file)) return;
     clearTimeout(timer);
     timer = setTimeout(async () => {
-      console.log(`  modificato ${path.relative(root, file)}`);
+      console.log(`  changed ${path.relative(root, file)}`);
       if (file.endsWith('texweb.config.js')) cfg = await loadConfig(root, overrides);
       await regen();
       server.ws.send({ type: 'full-reload' });
@@ -91,22 +91,22 @@ export async function build(root, { force = false, overrides = {} } = {}) {
   root = path.resolve(root);
   const cfg = await loadConfig(root, overrides);
   fs.mkdirSync(cfg.siteDir, { recursive: true });
-  // un server senza HTTP, solo per leggere le definizioni dei widget
+  // a server without HTTP, only to load the widget definitions
   const loader = await createServer(viteConfig(root, cfg, { server: { middlewareMode: true, hmr: false }, appType: 'custom' }));
   const result = await generate(root, cfg, loader, { dev: false });
   await loader.close();
   report(result, root);
   if (result.diag.errors.length && !force) {
-    console.error('\n  build interrotta per gli errori qui sopra (usa --force per ignorarli)');
+    console.error('\n  build stopped because of the errors above (use --force to ignore them)');
     process.exitCode = 1;
     return;
   }
   const input = Object.fromEntries(fs.readdirSync(cfg.siteDir).filter((f) => f.endsWith('.html')).map((f) => [f.replace(/\.html$/, ''), path.join(cfg.siteDir, f)]));
   await viteBuild(viteConfig(root, cfg, { build: { outDir: cfg.outDir, emptyOutDir: true, rollupOptions: { input } } }));
-  console.log(`  sito pronto in ${path.relative(process.cwd(), cfg.outDir) || cfg.outDir}`);
+  console.log(`  site ready in ${path.relative(process.cwd(), cfg.outDir) || cfg.outDir}`);
 }
 
-// controlla il dialetto senza scrivere niente: utile su un progetto esistente
+// checks the sources against the dialect without writing anything: useful on an existing project
 export async function check(root) {
   root = path.resolve(root);
   const cfg = await loadConfig(root);
@@ -117,6 +117,6 @@ export async function check(root) {
   const result = await generate(root, cfg, loader, { check: true });
   await loader?.close();
   report(result, root);
-  console.log(`  ${result.tikz} figure TikZ da compilare, ${result.widgets.size} widget`);
+  console.log(`  ${result.tikz} TikZ figures to compile, ${result.widgets.size} widgets`);
   if (result.diag.errors.length) process.exitCode = 1;
 }

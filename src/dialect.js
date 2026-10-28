@@ -1,8 +1,8 @@
-// Il dialetto: l'elenco esplicito di comandi e ambienti che texweb conosce.
-// Tutto ciò che non è qui (e non è una macro definita nel preambolo) genera un errore
-// con file e riga, invece di sparire in silenzio.
+// The dialect: the explicit list of commands and environments texweb knows.
+// Anything not listed here (and not a macro defined in the preamble) is reported as an
+// error with file and line, instead of silently disappearing.
 
-// firme degli argomenti, nella notazione di xparse: m obbligatorio, o facoltativo, s asterisco
+// argument signatures, in xparse notation: m mandatory, o optional, s star
 export const MACRO_SIGNATURES = {
   part: 's o m', chapter: 's o m', section: 's o m', subsection: 's o m', subsubsection: 's o m',
   paragraph: 's o m', subparagraph: 's o m',
@@ -15,7 +15,7 @@ export const MACRO_SIGNATURES = {
   multicolumn: 'm m m', multirow: 'm m m',
   printbibliography: 'o',
   input: 'm', include: 'm',
-  // ignorati, ma con gli argomenti da consumare
+  // ignored, but their arguments must be consumed
   vspace: 's m', hspace: 's m', setlength: 'm m', addtolength: 'm m', setcounter: 'm m',
   addcontentsline: 'm m m', renewcommand: 's m o o m', newcommand: 's m o o m', thispagestyle: 'm',
   pagestyle: 'm', rule: 'o m m', color: 'm', fontsize: 'm m', lstinputlisting: 'o m',
@@ -34,7 +34,7 @@ export const ENV_SIGNATURES = {
   widget: 'm o',
 };
 
-// comandi che non producono nulla sul web (impaginazione del PDF)
+// commands that produce nothing on the web (PDF layout)
 export const IGNORED_MACROS = new Set([
   'centering', 'raggedright', 'raggedleft', 'noindent', 'indent', 'par',
   'small', 'footnotesize', 'scriptsize', 'tiny', 'normalsize', 'large', 'Large', 'LARGE', 'huge', 'Huge',
@@ -46,13 +46,13 @@ export const IGNORED_MACROS = new Set([
   'color', 'fontsize', 'protect', 'nopagebreak', 'allowbreak', 'relax', 'strut',
 ]);
 
-// ambienti che si limitano a raggruppare: se ne rende il contenuto
+// environments that only group content: their content is rendered
 export const TRANSPARENT_ENVS = new Set(['center', 'flushleft', 'flushright', 'minipage', 'small', 'footnotesize', 'document']);
 
-// ambienti saltati del tutto
+// environments skipped entirely
 export const SKIPPED_ENVS = new Set(['titlepage', 'comment']);
 
-// simboli testuali
+// text symbols
 export const TEXT_SYMBOLS = {
   '%': '%', '&': '&amp;', _: '_', '#': '#', $: '$', '{': '{', '}': '}', ' ': ' ', ',': ' ',
   ';': ' ', ':': ' ', '!': '', '/': '', '-': '­', '@': '',
@@ -62,10 +62,10 @@ export const TEXT_SYMBOLS = {
   quad: ' ', qquad: '  ', enspace: ' ', thinspace: ' ',
 };
 
-// accenti: \`a \'e \"o \^i \~n
+// accents: \`a \'e \"o \^i \~n
 export const ACCENTS = { '`': '̀', "'": '́', '"': '̈', '^': '̂', '~': '̃' };
 
-// algpseudocode, con le stesse parole chiave del PDF
+// algpseudocode, with the same keywords as the PDF
 export const ALGO_BLOCKS = {
   If: { open: 'if', suffix: 'then', end: 'end if' },
   For: { open: 'for', suffix: 'do', end: 'end for' },

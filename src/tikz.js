@@ -4,16 +4,16 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-// texweb.sty si trova anche se il progetto non ne ha una copia
+// texweb.sty is found even when the project has no copy of it
 const LATEX_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'latex');
 const texEnv = () => ({ ...process.env, TEXINPUTS: `${LATEX_DIR}${path.delimiter}${process.env.TEXINPUTS ?? ''}` });
 
-// Ogni tikzpicture viene compilato con il LaTeX vero e lo stesso preambolo del documento:
-// stessa classe, stessi colori, stessi macro (\numgrid, \cellrect, ...). Il pacchetto preview
-// ritaglia la pagina attorno alla figura, poi dvisvgm la converte in SVG.
-// Si passa dal DVI (latex, con l'opzione di classe dvisvgm) e non dal PDF: così dvisvgm non
-// ha bisogno di Ghostscript o mutool, e le immagini PNG dentro i TikZ vengono incorporate.
-// Il risultato resta in cache, indicizzato dall'hash di preambolo + codice.
+// Every tikzpicture is compiled by real LaTeX with the document's own preamble:
+// same class, same colors, same macros (\numgrid, \cellrect, ...). The preview package
+// crops the page around the figure, then dvisvgm converts it to SVG.
+// It goes through DVI (latex with the dvisvgm class option) rather than PDF, so dvisvgm
+// needs neither Ghostscript nor mutool, and PNG images inside TikZ get embedded.
+// Results are cached, keyed by the hash of preamble + code.
 
 function run(cmd, args, opts) {
   return new Promise((resolve) => {
@@ -26,16 +26,16 @@ function run(cmd, args, opts) {
   });
 }
 
-// prima riga di errore del log di LaTeX, con un po' di contesto
+// first error line of the LaTeX log, with some context
 function texError(log) {
   const i = log.indexOf('\n! ');
-  if (i < 0) return 'compilazione fallita';
+  if (i < 0) return 'compilation failed';
   return log.slice(i + 1).split('\n').slice(0, 3).join(' ').replace(/\s+/g, ' ').trim();
 }
 
 export function tikzDocument(preamble, code) {
   const body = preamble.raw.replace(/\\documentclass(\[[^\]]*\])?\{[^}]*\}/, '');
-  // l'opzione globale dvisvgm fa usare a graphicx, xcolor e TikZ il driver giusto
+  // the global dvisvgm option makes graphicx, xcolor and TikZ use the right driver
   const cls = preamble.classLine.replace(/\\documentclass(\[([^\]]*)\])?/, (_, __, o) => `\\documentclass[dvisvgm${o ? `,${o}` : ''}]`);
   return [
     cls,
@@ -58,7 +58,7 @@ async function compileOne({ hash, code }, { preamble, root, cacheDir, engine }) 
   const work = fs.mkdtempSync(path.join(cacheDir, 'job-'));
   try {
     fs.writeFileSync(path.join(work, 'fig.tex'), tikzDocument(preamble, code));
-    // si compila dalla cartella del progetto, così \includegraphics{images/...} funziona
+    // compile from the project folder, so \includegraphics{images/...} works
     const xe = engine === 'xelatex';
     const args = ['-interaction=nonstopmode', '-halt-on-error', `-output-directory=${work}`, ...(xe ? ['-no-pdf'] : []), path.join(work, 'fig.tex')];
     const tex = await run(DVI_ENGINE[engine] ?? 'latex', args, { cwd: root, env: texEnv() });
@@ -91,7 +91,7 @@ export async function compileTikz(jobs, opts) {
   return results;
 }
 
-// immagini PDF incluse con \includegraphics: diventano PNG ad alta risoluzione con Ghostscript
+// PDF images included with \includegraphics become high-resolution PNGs via Ghostscript
 export async function pdfToPng(src, out) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(src).mtimeMs) return true;

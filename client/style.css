@@ -2,8 +2,8 @@
 
 /* ===================================================== */
 /* PALETTE                                               */
-/* I colori --base-* arrivano dai \definecolor del       */
-/* preambolo; in dark mode si schiariscono da soli.      */
+/* The --base-* colors come from the preamble's         */
+/* \definecolor; in dark mode they lighten by themselves.*/
 /* ===================================================== */
 :root {
   --bg: #fbfaf7;
@@ -55,7 +55,7 @@
 }
 
 /* ===================================================== */
-/* BASE E IMPAGINAZIONE                                  */
+/* BASE AND LAYOUT                                       */
 /* ===================================================== */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
@@ -98,7 +98,7 @@ a { color: var(--accent-soft); text-decoration-thickness: 1px; text-underline-of
 .tw-main { max-width: 44rem; min-width: 0; padding: 2.5rem 0 5rem; }
 
 /* ===================================================== */
-/* TITOLI                                                */
+/* HEADINGS                                              */
 /* ===================================================== */
 .tw-chapter-head { margin-bottom: 2.2rem; }
 .tw-chapter-num { font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.8rem; color: var(--accent-soft); margin: 0; }
@@ -133,7 +133,7 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 .tw-latex sub { vertical-align: -0.25em; margin-left: -0.1em; margin-right: -0.1em; }
 
 /* ===================================================== */
-/* BOX (come i tcolorbox del preambolo)                  */
+/* BOXES (like the preamble's tcolorbox)                 */
 /* ===================================================== */
 .tw-box { margin: 1.4rem 0; padding: 0.7rem 1rem 0.7rem 1.1rem; border-left: 3px solid var(--box); background: color-mix(in oklab, var(--box) 8%, var(--bg)); --box: var(--accent); }
 .tw-box > p:first-child, .tw-box-split > div > p:first-child { margin-top: 0.2rem; }
@@ -151,7 +151,7 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 @media (max-width: 640px) { .tw-box-split { grid-template-columns: 1fr; } }
 
 /* ===================================================== */
-/* FIGURE, TABELLE, ALGORITMI                            */
+/* FIGURES, TABLES, ALGORITHMS                           */
 /* ===================================================== */
 .tw-float { margin: 2rem 0; }
 .tw-float figcaption {
@@ -187,7 +187,7 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 
 .tw-math { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }
 
-/* riferimenti, citazioni, note */
+/* references, citations, footnotes */
 .tw-ref, .tw-cite { text-decoration: none; }
 .tw-ref:hover, .tw-cite:hover { text-decoration: underline; }
 .tw-badref, .tw-unknown { color: var(--hot); font-weight: 700; }
@@ -212,12 +212,12 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
   font-family: var(--font-sans); font-size: 0.95rem;
 }
 .tw-widget.mounted::after {
-  content: 'interattiva'; position: absolute; top: -0.65rem; right: 0.8rem; padding: 0 0.45rem;
+  content: attr(data-badge); position: absolute; top: -0.65rem; right: 0.8rem; padding: 0 0.45rem;
   font-family: var(--font-sans); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--fig); background: var(--bg); border: 1px solid color-mix(in oklab, var(--fig) 40%, transparent); border-radius: 999px;
 }
 
-/* errori e avvisi, solo in sviluppo */
+/* errors and warnings, development only */
 .tw-diag { margin: 0 0 2rem; font-family: var(--font-sans); font-size: 0.88rem; border: 1px solid var(--hot); border-radius: 8px; background: color-mix(in oklab, var(--hot) 6%, var(--bg)); }
 .tw-diag summary { cursor: pointer; padding: 0.5rem 0.9rem; color: var(--hot); font-weight: 600; }
 .tw-diag ul { margin: 0; padding: 0 0.9rem 0.7rem 2rem; max-height: 16rem; overflow: auto; }

@@ -1,0 +1,33 @@
+/* edges: positive weights in the accent color, negative ones in red */
+.neural-net .edge { stroke-opacity: 0.22; transition: stroke-opacity calc(0.4s / var(--speed, 1)); }
+.neural-net .edge.pos { stroke: var(--accent-soft); }
+.neural-net .edge.neg { stroke: var(--hot); }
+
+/* an active edge: the moving dashes show the signal passing through */
+.neural-net .edge.on {
+  stroke-opacity: 1;
+  stroke-dasharray: 8 6;
+  animation: neural-net-flow calc(0.6s / var(--speed, 1)) linear infinite;
+}
+@keyframes neural-net-flow { to { stroke-dashoffset: -14; } }
+
+/* neurons: the fill follows the value (--level goes from 0 to 1) */
+.neural-net .neuron circle {
+  fill: color-mix(in oklab, var(--accent) calc(var(--level, 0) * 75%), var(--surface));
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  /* durations are divided by --speed: at 2× everything runs twice as fast */
+  transition: fill calc(0.5s / var(--speed, 1)) ease, stroke calc(0.3s / var(--speed, 1)), stroke-width calc(0.3s / var(--speed, 1));
+}
+.neural-net .neuron.active circle { stroke: var(--hot); stroke-width: 3; }
+.neural-net .neuron.off circle { fill: var(--surface); }
+.neural-net .value {
+  fill: var(--ink); font-family: var(--font-mono); font-size: 12px;
+  text-anchor: middle; dominant-baseline: central; transition: fill calc(0.3s / var(--speed, 1));
+}
+.neural-net .neuron.strong .value { fill: var(--surface); }
+.neural-net .name { fill: var(--ink-soft); font-family: var(--font-serif); font-style: italic; font-size: 15px; text-anchor: middle; }
+
+@media (prefers-reduced-motion: reduce) {
+  .neural-net .edge.on { animation: none; }
+}

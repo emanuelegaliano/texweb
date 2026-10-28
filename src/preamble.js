@@ -1,8 +1,8 @@
-// Lettura del preambolo: macro (per KaTeX e per il testo), colori, bibliografia, metadati.
-// Si legge il testo con un piccolo scanner a graffe: il preambolo è pieno di TikZ e
-// tcolorbox che non serve capire, basta riconoscere le definizioni.
+// Reading the preamble: macros (for KaTeX and for the text), colors, bibliography, metadata.
+// The text is read with a small brace scanner: the preamble is full of TikZ and tcolorbox
+// code that does not need to be understood, only the definitions must be recognized.
 
-// legge un gruppo bilanciato che inizia in src[i] (open = '{' o '['); restituisce [contenuto, indice dopo]
+// reads a balanced group starting at src[i] (open = '{' or '['); returns [content, index after]
 export function readBalanced(src, i, open = '{', close = '}', { comments = true } = {}) {
   if (src[i] !== open) return null;
   let depth = 0, brace = 0;
@@ -23,7 +23,7 @@ export function readBalanced(src, i, open = '{', close = '}', { comments = true 
 
 const skipWs = (src, i) => { while (i < src.length && /\s/.test(src[i])) i++; return i; };
 
-// toglie i commenti (ma non \%)
+// strips comments (but not \%)
 export const stripComments = (s) => s.replace(/(^|[^\\])%.*$/gm, '$1');
 
 export function readPreamble(mainSrc) {
@@ -32,8 +32,8 @@ export function readPreamble(mainSrc) {
   const src = stripComments(raw);
   const classLine = (src.match(/\\documentclass(\[[^\]]*\])?\{[^}]*\}/) ?? ['\\documentclass{article}'])[0];
 
-  const macros = {};       // nome -> { nargs, default, body }
-  const colors = {};       // nome -> '#rrggbb'
+  const macros = {};       // name -> { nargs, default, body }
+  const colors = {};       // name -> '#rrggbb'
   const bibFiles = [];
   const meta = {};
 
@@ -61,7 +61,7 @@ export function readPreamble(mainSrc) {
       if (g) meta[kind] = g[0].trim();
       continue;
     }
-    // nome della macro: {\nome} oppure \nome
+    // macro name: {\name} or \name
     let name;
     if (src[i] === '{') {
       const g = readBalanced(src, i); if (!g) continue;
@@ -94,7 +94,7 @@ function colorToHex(model, value) {
   return null;
 }
 
-// macro per KaTeX: solo quelle che hanno senso in matematica (niente TikZ, colori di pagina, ecc.)
+// macros for KaTeX: only those that make sense in math (no TikZ, page colors, etc.)
 export function katexMacros(macros) {
   const out = {};
   for (const [name, { nargs, body }] of Object.entries(macros)) {

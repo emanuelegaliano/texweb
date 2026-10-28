@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-// raccoglie errori e avvisi con file e riga, da mostrare nel terminale e nella pagina
+// collects errors and warnings with file and line, shown in the terminal and on the page
 export class Diagnostics {
   constructor(root) {
     this.root = root;
@@ -24,13 +24,13 @@ export class Diagnostics {
   format() {
     return this.items.map((d) => {
       const where = d.file ? `${d.file}${d.line ? `:${d.line}` : ''}  ` : '';
-      const tag = d.level === 'error' ? '\x1b[31merrore\x1b[0m' : '\x1b[33mavviso\x1b[0m';
+      const tag = d.level === 'error' ? '\x1b[31merror\x1b[0m' : '\x1b[33mwarning\x1b[0m';
       return `${tag}  ${where}${d.message}`;
     }).join('\n');
   }
 }
 
-// distanza di Levenshtein, per i suggerimenti "forse intendevi"
+// Levenshtein distance, for the "did you mean" suggestions
 export function closest(name, candidates) {
   let best = null, bestD = Infinity;
   for (const c of candidates) {

@@ -2,7 +2,7 @@
   "name": "texweb",
   "version": "0.1.0",
   "private": true,
-  "description": "Scrivi gli appunti in LaTeX, pubblicali come sito con figure interattive",
+  "description": "Write your notes in LaTeX, publish them as a website with interactive figures",
   "keywords": [
     "latex",
     "tikz",
