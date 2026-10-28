@@ -208,6 +208,9 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
     border-left: 2px solid var(--rule); padding-left: 0.6rem;
     transition: border-color 0.3s, background-color 0.3s;
   }
+  /* inside boxes and captions the content is padded: push the note out by the same amount */
+  .tw-box .tw-sidenote { margin-right: calc(-17.5rem - 1rem); }
+  .tw-float figcaption .tw-sidenote { margin-right: calc(-17.5rem - 0.9rem); }
   .tw-sidenote-num { font-weight: 600; color: var(--accent-soft); margin-right: 0.15rem; }
   .tw-sidenote.flash, .tw-sidenote:hover { border-left-color: var(--accent-soft); background: color-mix(in oklab, var(--accent-soft) 8%, transparent); }
   .tw-footnotes { display: none; }
