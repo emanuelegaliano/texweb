@@ -247,8 +247,13 @@ export class Renderer {
     const wrap = (open, close) => function (n, ctx, flow, a) { flow.inline(open + this.inlineArg(a[0], ctx) + close); };
     const heading = (level) => function (n, ctx, flow, a) { this.heading(level, n, ctx, flow, a); };
     this._handlers = {
-      part: function (n, ctx, flow, a) { this.part = stripTags(this.inlineArg(a[2], ctx)); },
+      part: function (n, ctx, flow, a) {
+        if (!isStar(n)) this.counters.part = (this.counters.part ?? 0) + 1;
+        this.part = { title: stripTags(this.inlineArg(a[2], ctx)), num: isStar(n) ? null : roman(this.counters.part) };
+      },
       chapter: function (n, ctx, flow, a) { this.chapter(n, ctx, flow, a); },
+      // \backmatter closes the current part: bibliography and appendices do not belong to it
+      backmatter: function () { this.part = null; },
       section: heading('section'),
       subsection: heading('subsection'),
       subsubsection: heading('subsubsection'),
@@ -603,6 +608,7 @@ export class Renderer {
     const title = (opt.match(/title=\{?([^},]*)\}?/) ?? [])[1] ?? this.t.bibliography;
     if (flow instanceof PageFlow) flow.parbreak();
     this.bibPage = this.newPage({ slug: slugify(title), title: esc(title), kind: 'bibliography' });
+    this.bibPage.part = null;
     this.bibPage.chunks.push(`<header class="tw-chapter-head"><h1>${esc(title)}</h1></header>`, `${PH}BIB${PH}`);
     this.page = this.bibPage;
   }
@@ -704,6 +710,14 @@ export class Renderer {
 }
 
 // ---------------------------------------------------------------------- helpers
+// parts are numbered with Roman numerals, as in the book class
+function roman(n) {
+  const map = [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let out = '';
+  for (const [v, s] of map) while (n >= v) { out += s; n -= v; }
+  return out;
+}
+
 function sourceOfArg(ctx, a) {
   const c = a?.content ?? [];
   if (!c.length) return '';

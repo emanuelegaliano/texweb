@@ -201,16 +201,20 @@ function themeCss(site) {
   return `:root{${vars.join('')}}`;
 }
 
-function nav(page, pages) {
+// the heading of a \part: "Parte I" above the title
+const partHeading = (part, t, cls) =>
+  `<li class="${cls}">${part.num ? `<span class="tw-part-num">${esc(t.part)} ${part.num}</span>` : ''}<span class="tw-part-title">${esc(part.title)}</span></li>`;
+
+function nav(page, pages, t) {
   let html = '';
   let part = null;
   for (const p of pages) {
-    if (p.part && p.part !== part) { part = p.part; html += `<li class="tw-nav-part">${esc(part)}</li>`; }
+    if (p.part && p.part !== part) { part = p.part; html += partHeading(part, t, 'tw-nav-part'); }
     const cur = p.slug === page.slug;
-    html += `<li class="tw-nav-ch${cur ? ' current' : ''}"><a href="${p.slug}.html">${p.number ? `<span class="tw-nav-num">${p.number}</span>` : ''}${p.title.replace(/<[^>]*>/g, '')}</a>`;
+    html += `<li class="tw-nav-ch${cur ? ' current' : ''}${p.part ? ' in-part' : ''}"><a href="${p.slug}.html">${p.number ? `<span class="tw-nav-num">${p.number}</span>` : ''}<span class="tw-nav-title">${p.title.replace(/<[^>]*>/g, '')}</span></a>`;
     if (cur && p.toc.length) {
-      html += `<ol class="tw-nav-sec">${p.toc.filter((t) => t.level !== 'subsubsection').map((t) =>
-        `<li class="lv-${t.level}"><a href="#${t.id}">${t.num ? `<span class="tw-nav-num">${t.num}</span>` : ''}${esc(t.title)}</a></li>`).join('')}</ol>`;
+      html += `<ol class="tw-nav-sec">${p.toc.filter((s) => s.level !== 'subsubsection').map((s) =>
+        `<li class="lv-${s.level}"><a href="#${s.id}">${s.num ? `<span class="tw-nav-num">${s.num}</span>` : ''}<span class="tw-nav-title">${esc(s.title)}</span></a></li>`).join('')}</ol>`;
     }
     html += '</li>';
   }
@@ -242,7 +246,12 @@ function pageHtml(page, { site, pages, diag }) {
   const plain = (s) => s.replace(/<[^>]*>/g, '');
   let main = page.chunks.join('\n');
   if (page.kind === 'index') {
-    const list = pages.map((p) => `<li><a href="${p.slug}.html">${p.number ? `<span class="tw-nav-num">${p.number}</span>` : ''}${plain(p.title)}</a></li>`).join('');
+    let part = null;
+    const list = pages.map((p) => {
+      let head = '';
+      if (p.part && p.part !== part) { part = p.part; head = partHeading(part, t, 'tw-index-part'); }
+      return `${head}<li${p.part ? ' class="in-part"' : ''}><a href="${p.slug}.html">${p.number ? `<span class="tw-nav-num">${p.number}</span>` : ''}<span class="tw-nav-title">${plain(p.title)}</span></a></li>`;
+    }).join('');
     main = `<header class="tw-chapter-head tw-cover"><h1>${esc(site.title)}</h1>${site.author ? `<p class="tw-author">${esc(site.author)}</p>` : ''}</header>${main}<ol class="tw-index">${list}</ol>`;
   }
   const notes = page.footnotes.length
@@ -261,7 +270,7 @@ function pageHtml(page, { site, pages, diag }) {
 <body>
 <header class="tw-topbar"><a class="tw-brand" href="index.html">${esc(site.title)}</a><div class="tw-actions">${reportButton(page, site)}<button class="tw-theme" type="button" aria-label="${esc(t.toggleTheme)}" title="${esc(t.toggleTheme)}">◐</button></div></header>
 <div class="tw-layout">
-<nav class="tw-nav" aria-label="${esc(t.contents)}">${nav(page, pages)}</nav>
+<nav class="tw-nav" aria-label="${esc(t.contents)}">${nav(page, pages, t)}</nav>
 <main class="tw-main">
 ${diagnosticsPanel(diag, t)}
 ${main}

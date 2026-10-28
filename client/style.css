@@ -95,13 +95,22 @@ a { color: var(--accent-soft); text-decoration-thickness: 1px; text-underline-of
 .tw-nav ol { list-style: none; margin: 0; padding: 0; }
 .tw-nav a { display: block; color: var(--ink-soft); text-decoration: none; padding: 0.22rem 0.6rem; border-left: 2px solid transparent; }
 .tw-nav a:hover { color: var(--ink); }
-.tw-nav-part { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; color: var(--ink-soft); margin: 1rem 0 0.3rem 0.6rem; }
+/* parts: a clear separator with "Parte I" and the title; their chapters hang under them */
+.tw-nav-part { margin: 1.3rem 0 0.4rem; padding: 0.7rem 0.6rem 0; border-top: 1px solid var(--rule); }
+.tw-nav-part .tw-part-num, .tw-index-part .tw-part-num {
+  display: block; font-family: var(--font-sans); font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent-soft);
+}
+.tw-nav-part .tw-part-title { display: block; font-family: var(--font-serif); font-size: 1.02rem; font-weight: 700; line-height: 1.25; color: var(--accent); margin-top: 0.15rem; }
+.tw-nav-ch.in-part { margin-left: 0.6rem; border-left: 1px solid var(--rule); }
+.tw-nav a { display: flex; align-items: baseline; }
+.tw-nav-title { flex: 1; min-width: 0; }
 .tw-nav-ch.current > a { color: var(--accent); font-weight: 600; border-left-color: var(--accent); }
 .tw-nav-sec { margin: 0.2rem 0 0.6rem !important; }
 .tw-nav-sec a { padding-left: 1.4rem; font-size: 0.82rem; }
 .tw-nav-sec .lv-subsection a { padding-left: 2.3rem; }
 .tw-nav-sec a.current { color: var(--accent); border-left-color: var(--accent-soft); }
-.tw-nav-num { display: inline-block; min-width: 2.4rem; color: var(--ink-soft); opacity: 0.75; font-variant-numeric: tabular-nums; }
+.tw-nav-num { display: inline-block; flex: none; min-width: 2.4rem; color: var(--ink-soft); opacity: 0.75; font-variant-numeric: tabular-nums; }
 
 .tw-main { max-width: 44rem; min-width: 0; padding: 2.5rem 0 5rem; }
 
@@ -120,7 +129,10 @@ h4 { font-size: 1.1rem; margin: 1.8rem 0 0.5rem; }
 .tw-author { font-family: var(--font-sans); color: var(--ink-soft); }
 .tw-index { font-family: var(--font-sans); font-size: 1.05rem; padding: 0; list-style: none; }
 .tw-index li { border-bottom: 1px solid var(--rule); }
-.tw-index a { display: block; padding: 0.7rem 0.2rem; text-decoration: none; color: var(--ink); }
+.tw-index a { display: flex; align-items: baseline; padding: 0.7rem 0.2rem; text-decoration: none; color: var(--ink); }
+.tw-index li.tw-index-part { border-bottom: 2px solid var(--accent); padding: 2.2rem 0.2rem 0.6rem; }
+.tw-index-part .tw-part-title { display: block; font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; line-height: 1.2; color: var(--accent); margin-top: 0.25rem; }
+.tw-index li.in-part a { padding-left: 1rem; }
 .tw-index a:hover { color: var(--accent); }
 
 p, li { hyphens: auto; }

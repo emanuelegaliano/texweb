@@ -36,7 +36,7 @@ Run `texweb check` on an existing project to see what is missing before you star
 
 ## Numbering
 
-Numbering follows the `book` class: chapters, sections down to `\subsubsection`; figures, tables, algorithms, equations and numbered boxes within the chapter (`3.4`); appendix chapters with letters. A `\label` refers to the last numbered thing before it, as in LaTeX; inside a figure it always refers to the figure.
+Numbering follows the `book` class: parts with Roman numerals (shown as headings in the home index and in the sidebar, with their chapters grouped under them; `\backmatter` closes the last part), chapters, sections down to `\subsubsection`; figures, tables, algorithms, equations and numbered boxes within the chapter (`3.4`); appendix chapters with letters. A `\label` refers to the last numbered thing before it, as in LaTeX; inside a figure it always refers to the figure.
 
 ## Preamble macros
 

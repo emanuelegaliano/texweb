@@ -4,6 +4,7 @@
 export const LOCALES = {
   en: {
     chapter: 'Chapter',
+    part: 'Part',
     appendix: 'Appendix',
     floats: { figure: 'Figure', table: 'Table', algorithm: 'Algorithm' },
     refNames: {
@@ -31,6 +32,7 @@ export const LOCALES = {
   },
   it: {
     chapter: 'Capitolo',
+    part: 'Parte',
     appendix: 'Appendice',
     floats: { figure: 'Figura', table: 'Tabella', algorithm: 'Algoritmo' },
     refNames: {
