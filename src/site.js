@@ -5,7 +5,7 @@ import { Diagnostics } from './diagnostics.js';
 import { readPreamble, katexMacros } from './preamble.js';
 import { loadBib } from './bib.js';
 import { Renderer, esc } from './render.js';
-import { compileTikz, pdfToPng } from './tikz.js';
+import { compileTikz, pdfToPng, embedImages } from './tikz.js';
 import { detectLang, getLocale } from './locale.js';
 
 export const FRAMEWORK = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -125,7 +125,7 @@ export async function generate(root, cfg, vite, { dev = false, check = false } =
   for (const [hash, res] of tikz) {
     const job = r.tikz.get(hash);
     if (res.ok) {
-      fs.copyFileSync(res.file, path.join(tikzDir, `${hash}.svg`));
+      fs.writeFileSync(path.join(tikzDir, `${hash}.svg`), embedImages(fs.readFileSync(res.file, 'utf8'), root));
       // the site's text column is wider than the PDF's: figures are scaled by the same factor,
       // so the text inside figures stays in proportion with the text of the page
       const head = fs.readFileSync(res.file, 'utf8').slice(0, 600);

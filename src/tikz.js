@@ -98,3 +98,17 @@ export async function pdfToPng(src, out) {
   const r = await run('gs', ['-q', '-dSAFER', '-dBATCH', '-dNOPAUSE', '-sDEVICE=pngalpha', '-r220', '-dFirstPage=1', '-dLastPage=1', `-sOutputFile=${out}`, src], {});
   return r.code === 0;
 }
+
+// dvisvgm writes bitmaps included in TikZ (\includegraphics{images/x.png}) as references to the
+// file, relative to the project. On the site the SVG lives elsewhere, so the reference would break:
+// the images are embedded in the SVG as data URIs instead.
+const MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml' };
+
+export function embedImages(svg, root) {
+  return svg.replace(/(xlink:href|href)=(['"])(?!data:|https?:|#)([^'"]+)\2/g, (all, attr, q, ref) => {
+    const ext = ref.split('.').pop().toLowerCase();
+    const file = path.resolve(root, ref);
+    if (!MIME[ext] || !fs.existsSync(file)) return all;
+    return `${attr}=${q}data:${MIME[ext]};base64,${fs.readFileSync(file).toString('base64')}${q}`;
+  });
+}

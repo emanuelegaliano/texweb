@@ -120,3 +120,14 @@ test('GitHub repository from the config or the git remote', async () => {
   assert.equal(githubRepo(dir, {}), 'me/other');
   assert.equal(githubRepo(dir, { repository: false }), null);
 });
+
+test('bitmaps referenced by TikZ SVGs are embedded', async () => {
+  const { embedImages } = await import('../src/tikz.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'texweb-'));
+  fs.mkdirSync(path.join(dir, 'images'));
+  fs.writeFileSync(path.join(dir, 'images', 'a.png'), Buffer.from([137, 80, 78, 71]));
+  const out = embedImages("<image xlink:href='images/a.png'/><image xlink:href='missing.png'/><use xlink:href='#g1'/>", dir);
+  assert.match(out, /xlink:href='data:image\/png;base64,iVBORw=='/);
+  assert.match(out, /xlink:href='missing\.png'/);
+  assert.match(out, /xlink:href='#g1'/);
+});
