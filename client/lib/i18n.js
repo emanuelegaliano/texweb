@@ -5,10 +5,12 @@ const STRINGS = {
   en: {
     play: 'Play', pause: 'Pause', prev: 'Previous step', next: 'Next step', restart: 'Restart',
     speed: 'Speed', speedValue: (s) => `${s}×`, interactive: 'interactive',
+    theme: { auto: 'Theme: automatic, as the device', light: 'Theme: light', dark: 'Theme: dark' },
   },
   it: {
     play: 'Riproduci', pause: 'Pausa', prev: 'Passo indietro', next: 'Passo avanti', restart: 'Ricomincia',
     speed: 'Velocità', speedValue: (s) => `${String(s).replace('.', ',')}×`, interactive: 'interattiva',
+    theme: { auto: 'Tema: automatico, come il dispositivo', light: 'Tema: chiaro', dark: 'Tema: scuro' },
   },
 };
 

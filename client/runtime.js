@@ -76,13 +76,33 @@ function sidenotes() {
   });
 }
 
+// theme: automatic (follows the device, also when it changes), light or dark.
+// The button cycles through the three; "automatic" is the default and is not stored.
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_ICONS = { auto: '◐', light: '☀', dark: '☾' };
+
 function theme() {
   const root = document.documentElement;
-  try { const t = localStorage.getItem('texweb-theme'); if (t) root.dataset.theme = t; } catch { /* storage unavailable */ }
-  document.querySelector('.tw-theme')?.addEventListener('click', () => {
-    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme = dark ? 'light' : 'dark';
-    try { localStorage.setItem('texweb-theme', root.dataset.theme); } catch { /* same */ }
+  const btn = document.querySelector('.tw-theme');
+  let mode = 'auto';
+  try { const saved = localStorage.getItem('texweb-theme'); if (THEMES.includes(saved)) mode = saved; } catch { /* storage unavailable */ }
+  const apply = () => {
+    if (mode === 'auto') delete root.dataset.theme;
+    else root.dataset.theme = mode;
+    if (btn) {
+      btn.textContent = THEME_ICONS[mode];
+      btn.title = t('theme')[mode];
+      btn.setAttribute('aria-label', t('theme')[mode]);
+    }
+  };
+  apply();
+  btn?.addEventListener('click', () => {
+    mode = THEMES[(THEMES.indexOf(mode) + 1) % THEMES.length];
+    try {
+      if (mode === 'auto') localStorage.removeItem('texweb-theme');
+      else localStorage.setItem('texweb-theme', mode);
+    } catch { /* same */ }
+    apply();
   });
 }
 

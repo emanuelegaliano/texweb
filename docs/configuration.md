@@ -68,6 +68,8 @@ The site palette comes from the preamble's `\definecolor` with these names:
 | `lemma` | `LemmaColor` | theorems and lemmas |
 | `ex` | `ExColor` | exercises |
 
+The theme button in the top bar cycles between automatic (the default: the site follows the light or dark mode of the device, also when it changes), light and dark; the choice is remembered by the browser.
+
 If your colors have other names, map them in `theme`, e.g. `theme: { accent: 'MainBlue' }`. In dark mode the colors are lightened automatically. Every `\definecolor` is also available to `\textcolor` and to widgets as `--tex-<Name>`.
 
 ## Math
