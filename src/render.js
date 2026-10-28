@@ -332,6 +332,7 @@ export class Renderer {
       number = this.chapterLabel();
     }
     this.page = this.newPage({ slug: slugify(stripTags(title)), title, number, kind: star ? 'unnumbered' : 'chapter' });
+    this.page.source = path.relative(this.root, ctx.file);
     this.setTarget(number ?? stripTags(title), 'top', 'chapter');
     const kicker = number ? `<p class="tw-chapter-num">${this.appendix ? this.t.appendix : this.t.chapter} ${number}</p>` : '';
     this.page.chunks.push(`<header class="tw-chapter-head">${kicker}<h1>${title}</h1></header>`);

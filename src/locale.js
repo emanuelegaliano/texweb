@@ -23,6 +23,11 @@ export const LOCALES = {
     missingImage: 'missing image',
     tikzFailed: 'TikZ figure not compiled',
     diagnostics: (errors, warnings) => `${errors} errors, ${warnings} warnings`,
+    reportError: 'Report an error',
+    issue: {
+      title: 'Error in', page: 'Page', section: 'Section', source: 'Source', selection: 'Selected text',
+      describe: 'Describe the error here:',
+    },
   },
   it: {
     chapter: 'Capitolo',
@@ -45,6 +50,11 @@ export const LOCALES = {
     missingImage: 'immagine mancante',
     tikzFailed: 'figura TikZ non compilata',
     diagnostics: (errors, warnings) => `${errors} errori, ${warnings} avvisi`,
+    reportError: 'Segnala un errore',
+    issue: {
+      title: 'Errore in', page: 'Pagina', section: 'Sezione', source: 'Sorgente', selection: 'Testo selezionato',
+      describe: "Descrivi qui l'errore:",
+    },
   },
 };
 

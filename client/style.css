@@ -75,6 +75,14 @@ a { color: var(--accent-soft); text-decoration-thickness: 1px; text-underline-of
   border-bottom: 1px solid var(--rule);
 }
 .tw-brand { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tw-actions { display: flex; align-items: center; gap: 0.6rem; flex: none; }
+.tw-report {
+  display: inline-flex; align-items: center; gap: 0.35rem; height: 2.1rem; padding: 0 0.8rem;
+  border: 1px solid var(--rule); border-radius: 999px; background: var(--surface);
+  color: var(--ink-soft); font-size: 0.85rem; text-decoration: none; white-space: nowrap;
+}
+.tw-report:hover { color: var(--hot); border-color: color-mix(in oklab, var(--hot) 45%, var(--rule)); }
+@media (max-width: 560px) { .tw-report-label { display: none; } .tw-report { padding: 0 0.7rem; } }
 .tw-theme { flex: none; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 999px; width: 2.1rem; height: 2.1rem; cursor: pointer; }
 
 .tw-layout { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 80rem; margin: 0 auto; padding: 0 1rem; }

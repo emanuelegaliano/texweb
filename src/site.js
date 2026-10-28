@@ -77,6 +77,19 @@ function checkSty(root, mainSrc, diag) {
   }
 }
 
+// "owner/name" of the GitHub repository of the notes: from `repository` in the config,
+// otherwise from the origin remote in .git/config
+export function githubRepo(root, cfg) {
+  if (cfg.repository === false) return null;
+  if (cfg.repository) return String(cfg.repository).replace(/^https:\/\/github\.com\//, '').replace(/\.git$/, '');
+  const gitConfig = path.join(root, '.git', 'config');
+  if (!fs.existsSync(gitConfig)) return null;
+  const src = fs.readFileSync(gitConfig, 'utf8');
+  const origin = src.match(/\[remote "origin"\][^[]*?url\s*=\s*(\S+)/);
+  const m = origin?.[1].match(/github\.com[:/]([^/\s]+\/[^/\s]+?)(\.git)?$/);
+  return m ? m[1] : null;
+}
+
 // ---------------------------------------------------------------------- site generation
 export async function generate(root, cfg, vite, { dev = false, check = false } = {}) {
   const t0 = Date.now();
@@ -142,6 +155,7 @@ export async function generate(root, cfg, vite, { dev = false, check = false } =
     title: preamble.meta.title ?? cfg.title ?? r.pages[0].title,
     author: preamble.meta.author ?? cfg.author,
     colors: preamble.colors, theme: cfg.theme ?? {}, lang, t,
+    repo: githubRepo(root, cfg),
   };
   const visible = r.pages.filter((p) => p.kind !== 'index' || p.chunks.length);
   const order = r.pages.filter((p) => p.kind !== 'index');
@@ -210,6 +224,16 @@ function diagnosticsPanel(diag, t) {
   return `<details class="tw-diag"${n ? ' open' : ''}><summary>${t.diagnostics(n, diag.items.length - n)}</summary><ul>${rows}</ul></details>`;
 }
 
+// opens a new GitHub issue; the runtime fills in page, section, source file and selected text
+function reportButton(page, site) {
+  if (!site.repo) return '';
+  const { t } = site;
+  const href = `https://github.com/${site.repo}/issues/new`;
+  const data = { page: page.title.replace(/<[^>]*>/g, ''), source: page.source ?? '', labels: t.issue };
+  return `<a class="tw-report" href="${href}" target="_blank" rel="noopener" data-issue='${esc(JSON.stringify(data)).replace(/'/g, '&#39;')}'>`
+    + `<span aria-hidden="true">⚑</span> <span class="tw-report-label">${esc(t.reportError)}</span></a>`;
+}
+
 function pageHtml(page, { site, pages, diag }) {
   const { t } = site;
   const idx = pages.indexOf(page);
@@ -235,7 +259,7 @@ function pageHtml(page, { site, pages, diag }) {
 <style>${themeCss(site)}</style>
 </head>
 <body>
-<header class="tw-topbar"><a class="tw-brand" href="index.html">${esc(site.title)}</a><button class="tw-theme" type="button" aria-label="${esc(t.toggleTheme)}" title="${esc(t.toggleTheme)}">◐</button></header>
+<header class="tw-topbar"><a class="tw-brand" href="index.html">${esc(site.title)}</a><div class="tw-actions">${reportButton(page, site)}<button class="tw-theme" type="button" aria-label="${esc(t.toggleTheme)}" title="${esc(t.toggleTheme)}">◐</button></div></header>
 <div class="tw-layout">
 <nav class="tw-nav" aria-label="${esc(t.contents)}">${nav(page, pages)}</nav>
 <main class="tw-main">

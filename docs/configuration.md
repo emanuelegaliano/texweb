@@ -8,6 +8,7 @@ export default {
   title: 'Deep Learning notes',  // otherwise \title from the preamble
   author: 'Emanuele Galiano',    // otherwise \author from the preamble
   lang: 'it',                    // otherwise detected from babel or polyglossia
+  repository: 'me/my-notes',     // GitHub repository for "Report an error"; otherwise from the git remote, false to hide it
   widgets: 'widgets',            // folder of the widgets
   outDir: 'dist',                // output of texweb build
   cacheDir: '.texweb',           // cache and working site
@@ -22,6 +23,10 @@ export default {
 ## Language
 
 The interface of the site (chapter and figure labels, box titles, the player's buttons) follows the language of the notes: texweb reads the main language of `babel` (the last option, as babel does) or `polyglossia`'s `\setdefaultlanguage`. English and Italian are available; any other language falls back to English. Force it with `lang`.
+
+## Report an error
+
+When the notes live in a GitHub repository, the top bar has a **Report an error** button. It opens a new issue in that repository, already filled in with the page link, the section being read, the source `.tex` file and the text the reader selected before clicking. The repository is read from the `origin` remote in `.git/config` (this also works in GitHub Actions, after `actions/checkout`), or set explicitly with `repository`. Set `repository: false` to hide the button.
 
 ## Boxes
 

@@ -108,3 +108,15 @@ test('texweb/client can be imported in Node (widget definitions are read at buil
   assert.equal(typeof client.defineWidget, 'function');
   assert.deepEqual(client.SPEEDS, [0.5, 1, 2]);
 });
+
+test('GitHub repository from the config or the git remote', async () => {
+  const { githubRepo } = await import('../src/site.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'texweb-'));
+  assert.equal(githubRepo(dir, {}), null);
+  assert.equal(githubRepo(dir, { repository: 'me/notes' }), 'me/notes');
+  assert.equal(githubRepo(dir, { repository: 'https://github.com/me/notes.git' }), 'me/notes');
+  fs.mkdirSync(path.join(dir, '.git'));
+  fs.writeFileSync(path.join(dir, '.git', 'config'), '[remote "origin"]\n\turl = git@github.com:me/other.git\n\tfetch = +refs/heads/*\n');
+  assert.equal(githubRepo(dir, {}), 'me/other');
+  assert.equal(githubRepo(dir, { repository: false }), null);
+});

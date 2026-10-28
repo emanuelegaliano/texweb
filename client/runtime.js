@@ -13,7 +13,46 @@ export function start({ widgets }) {
   theme();
   spy();
   sidenotes();
+  reportError();
   mountWidgets(widgets);
+}
+
+// "report an error": a new issue prefilled with page, section, source file and the selected text
+function reportError() {
+  const link = document.querySelector('.tw-report');
+  if (!link) return;
+  const base = link.getAttribute('href');
+  const info = JSON.parse(link.dataset.issue || '{}');
+  // the section being read: the last heading above the top of the screen
+  const currentSection = () => {
+    let cur = null;
+    for (const hd of document.querySelectorAll('.tw-main h2[id], .tw-main h3[id], .tw-main h4[id]')) {
+      if (hd.getBoundingClientRect().top < 120) cur = hd; else break;
+    }
+    return cur;
+  };
+  // "3.2 Title": the number is a separate span, so join the parts with a space
+  const headingText = (hd) => [...hd.childNodes].map((n) => n.textContent.trim()).filter(Boolean).join(' ');
+  let selection = '';
+  // the selection is read on pointerdown, before clicking the link clears it
+  const grab = () => { selection = String(window.getSelection() ?? '').trim(); };
+  link.addEventListener('pointerdown', grab);
+  link.addEventListener('keydown', grab);
+  link.addEventListener('click', () => {
+    const sec = currentSection();
+    const url = new URL(location.href);
+    if (sec) url.hash = sec.id;
+    const L = info.labels;
+    const quoted = selection ? selection.slice(0, 600).split('\n').map((l) => `> ${l}`).join('\n') : '';
+    const lines = [`**${L.page}**: ${url.href}`];
+    if (sec) lines.push(`**${L.section}**: ${headingText(sec)}`);
+    if (info.source) lines.push(`**${L.source}**: \`${info.source}\``);
+    if (quoted) lines.push('', `**${L.selection}**:`, quoted);
+    lines.push('', L.describe, '');
+    const body = lines.join('\n');
+    const title = `${L.title} ${sec ? headingText(sec) : info.page}`;
+    link.href = `${base}?${new URLSearchParams({ title, body })}`;
+  });
 }
 
 // when the sidenote is visible, clicking a footnote mark highlights it instead of jumping to the list
