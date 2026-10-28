@@ -204,24 +204,39 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 .tw-fnref a { text-decoration: none; }
 .tw-footnotes { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.92rem; }
 
-/* sidenotes: on wide screens footnotes sit in the right margin, next to the line that cites them;
-   on narrower screens they stay in the list at the end of the page */
-.tw-sidenote { display: none; }
-@media (min-width: 1340px) {
-  .tw-sidenote {
+/* Footnotes.
+   From 860px up they are sidenotes in the right margin, next to the line that cites them: on pages
+   with notes the text column leaves room for them, and on medium screens notes and gap get narrower.
+   Below 860px a note opens under its line when its number is tapped (the runtime toggles .open).
+   The list at the end of the page is only a fallback without JavaScript. */
+.tw-sidenote-num { font-weight: 600; color: var(--accent-soft); margin-right: 0.15rem; }
+.tw-sidenote {
+  display: none;
+  font-family: var(--font-sans); font-size: 0.82rem; line-height: 1.45; font-style: normal; font-weight: 400;
+  color: var(--ink-soft); text-align: left; hyphens: auto;
+  border-left: 2px solid var(--rule); padding-left: 0.6rem;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+.tw-sidenote.open { display: block; margin: 0.4rem 0 0.6rem; padding: 0.4rem 0.6rem; background: color-mix(in oklab, var(--accent-soft) 6%, transparent); }
+.tw-fnref a { cursor: pointer; }
+.tw-js .tw-footnotes { display: none; }
+
+@media (min-width: 860px) {
+  :root { --note-w: 11.5rem; --note-gap: 1.5rem; }
+  .tw-main:has(.tw-sidenote) { max-width: min(44rem, calc(100% - var(--note-w) - var(--note-gap))); }
+  .tw-sidenote, .tw-sidenote.open {
     display: block; float: right; clear: right; position: relative;
-    width: 15rem; margin: 0.25rem -17.5rem 0.6rem 0;
-    font-family: var(--font-sans); font-size: 0.82rem; line-height: 1.45; font-style: normal; font-weight: 400;
-    color: var(--ink-soft); text-align: left; hyphens: auto;
-    border-left: 2px solid var(--rule); padding-left: 0.6rem;
-    transition: border-color 0.3s, background-color 0.3s;
+    width: var(--note-w); margin: 0.25rem calc(-1 * (var(--note-w) + var(--note-gap))) 0.6rem 0;
+    padding: 0 0 0 0.6rem; background: none;
   }
   /* inside boxes and captions the content is padded: push the note out by the same amount */
-  .tw-box .tw-sidenote { margin-right: calc(-17.5rem - 1rem); }
-  .tw-float figcaption .tw-sidenote { margin-right: calc(-17.5rem - 0.9rem); }
-  .tw-sidenote-num { font-weight: 600; color: var(--accent-soft); margin-right: 0.15rem; }
+  .tw-box .tw-sidenote { margin-right: calc(-1 * (var(--note-w) + var(--note-gap)) - 1rem); }
+  .tw-float figcaption .tw-sidenote { margin-right: calc(-1 * (var(--note-w) + var(--note-gap)) - 0.9rem); }
   .tw-sidenote.flash, .tw-sidenote:hover { border-left-color: var(--accent-soft); background: color-mix(in oklab, var(--accent-soft) 8%, transparent); }
   .tw-footnotes { display: none; }
+}
+@media (min-width: 1340px) {
+  :root { --note-w: 15rem; --note-gap: 2.5rem; }
 }
 .tw-bib li { margin: 0.6rem 0; }
 .tw-bib li:target { background: color-mix(in oklab, var(--accent-soft) 15%, transparent); }

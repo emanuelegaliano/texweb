@@ -55,14 +55,20 @@ function reportError() {
   });
 }
 
-// when the sidenote is visible, clicking a footnote mark highlights it instead of jumping to the list
+// footnote marks: in the margin the note is highlighted, on narrow screens it opens under its line
 function sidenotes() {
+  document.documentElement.classList.add('tw-js');
   document.addEventListener('click', (e) => {
     const a = e.target.closest?.('.tw-fnref a[data-note]');
     if (!a) return;
     const note = document.getElementById(`sn-${a.dataset.note}`);
-    if (!note || getComputedStyle(note).display === 'none') return;
+    if (!note) return;
     e.preventDefault();
+    if (getComputedStyle(note).float === 'none') {
+      note.classList.toggle('open');
+      a.setAttribute('aria-expanded', note.classList.contains('open'));
+      return;
+    }
     note.classList.remove('flash');
     void note.offsetWidth;
     note.classList.add('flash');

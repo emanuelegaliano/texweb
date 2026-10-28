@@ -32,7 +32,7 @@ Run `texweb check` on an existing project to see what is missing before you star
 
 ## Footnotes
 
-`\footnote` is shown as a **sidenote** in the right margin, next to the line that cites it, when the screen is wide enough. On narrower screens the notes are listed at the end of the page, with links back to the text.
+`\footnote` is shown as a **sidenote** in the right margin, next to the line that cites it, from 860px up: on pages with notes the text column leaves room for them, and on medium screens notes get narrower. On narrower screens (phones) tapping the note number opens the note right under its line. Without JavaScript the notes are listed at the end of the page.
 
 ## Numbering
 
