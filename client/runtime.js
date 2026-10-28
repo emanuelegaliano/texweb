@@ -80,12 +80,18 @@ function sidenotes() {
 // The button cycles through the three; "automatic" is the default and is not stored.
 const THEMES = ['auto', 'light', 'dark'];
 const THEME_ICONS = { auto: '◐', light: '☀', dark: '☾' };
+const THEME_KEY = 'texweb-theme-mode';
 
 function theme() {
   const root = document.documentElement;
   const btn = document.querySelector('.tw-theme');
   let mode = 'auto';
-  try { const saved = localStorage.getItem('texweb-theme'); if (THEMES.includes(saved)) mode = saved; } catch { /* storage unavailable */ }
+  try {
+    // 'texweb-theme' was written by the old two-state button: dropping it brings everyone back to automatic
+    localStorage.removeItem('texweb-theme');
+    const saved = localStorage.getItem(THEME_KEY);
+    if (THEMES.includes(saved)) mode = saved;
+  } catch { /* storage unavailable */ }
   const apply = () => {
     if (mode === 'auto') delete root.dataset.theme;
     else root.dataset.theme = mode;
@@ -99,8 +105,8 @@ function theme() {
   btn?.addEventListener('click', () => {
     mode = THEMES[(THEMES.indexOf(mode) + 1) % THEMES.length];
     try {
-      if (mode === 'auto') localStorage.removeItem('texweb-theme');
-      else localStorage.setItem('texweb-theme', mode);
+      if (mode === 'auto') localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, mode);
     } catch { /* same */ }
     apply();
   });

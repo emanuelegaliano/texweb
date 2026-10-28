@@ -266,7 +266,7 @@ function pageHtml(page, { site, pages, diag }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <style>${themeCss(site)}</style>
-<script>try{var m=localStorage.getItem('texweb-theme');if(m==='light'||m==='dark')document.documentElement.dataset.theme=m}catch(e){}</script>
+<script>try{var m=localStorage.getItem('texweb-theme-mode');if(m==='light'||m==='dark')document.documentElement.dataset.theme=m}catch(e){}</script>
 </head>
 <body>
 <header class="tw-topbar"><a class="tw-brand" href="index.html">${esc(site.title)}</a><div class="tw-actions">${reportButton(page, site)}<button class="tw-theme" type="button" aria-label="${esc(t.toggleTheme)}" title="${esc(t.toggleTheme)}">◐</button></div></header>
