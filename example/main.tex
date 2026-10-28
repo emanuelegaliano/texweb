@@ -1,0 +1,61 @@
+\documentclass[a4paper,11pt]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{libertinus}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc}
+\usepackage{texweb}
+
+\definecolor{Accent}{HTML}{0B3A3E}
+\definecolor{ObsColor}{HTML}{9C5A12}
+\definecolor{FigColor}{HTML}{6B3F73}
+\definecolor{LemmaColor}{HTML}{4E7A3A}
+
+\numberwithin{equation}{chapter}
+\newcommand{\R}{\mathbb{R}}
+
+% griglia di numeri, come nelle dispense
+\newcommand{\numgrid}[4][]{%
+  \edef\numgridlist{#4}%
+  \foreach \row [count=\ri] in \numgridlist {%
+    \foreach \val [count=\ci] in \row {%
+      \node[draw=black!60, minimum size=#3cm, inner sep=0pt, font=\scriptsize, anchor=north west, #1]
+        at ($#2 + ({(\ci-1)*#3},{-(\ri-1)*#3})$) {$\val$};
+    }%
+  }%
+}
+\newcommand{\cellrect}[7][]{%
+  \draw[#1] ($#2 + ({#4*#3},{-#5*#3})$) rectangle ++({#6*#3},{-#7*#3});%
+}
+
+\usepackage[skins]{tcolorbox}
+\newtcolorbox[auto counter, number within=chapter]{definizione}[1][]{
+  enhanced, frame hidden, sharp corners, colback=Accent!6, coltitle=Accent,
+  borderline west={2.5pt}{0pt}{Accent}, fonttitle=\sffamily\bfseries\small,
+  attach title to upper={\ }, title={Definizione~\thetcbcounter\ifx&#1&\else\ (#1)\fi.}}
+\newtcolorbox{osservazione}[1][]{
+  enhanced, frame hidden, sharp corners, colback=ObsColor!8, coltitle=ObsColor,
+  borderline west={2.5pt}{0pt}{ObsColor}, fonttitle=\sffamily\bfseries\small,
+  attach title to upper={\ }, title={Osservazione\ifx&#1&\else\ (#1)\fi.}}
+
+\usepackage[backend=bibtex]{biblatex}
+\addbibresource{refs.bib}
+\usepackage[hidelinks]{hyperref}
+
+\title{Esempio di appunti con texweb}
+\author{Emanuele Galiano}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\input{chapters/introduzione}
+\input{chapters/convoluzione}
+
+\printbibliography[title={Bibliografia}]
+\end{document}

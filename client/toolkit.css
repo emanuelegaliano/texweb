@@ -1,0 +1,89 @@
+/* kit per i widget: controlli, griglie SVG, finestra del kernel (da usare con texweb/client) */
+/* controlli
+   Le durate delle transizioni sono divise per --speed (0.5, 1 o 2), la velocità scelta nel player:
+   nei widget conviene fare lo stesso, ad esempio transition: fill calc(0.5s / var(--speed, 1)). */
+.controls { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; margin-bottom: 0.9rem; }
+.ctl-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-right: 0.4rem; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.seg.wrap { margin-bottom: 0.8rem; }
+.seg-btn {
+  border: 0; border-right: 1px solid var(--rule); background: transparent; color: var(--ink-soft);
+  padding: 0.35rem 0.7rem; font: inherit; font-size: 0.88rem; cursor: pointer; white-space: nowrap;
+}
+.seg-btn:last-child { border-right: 0; }
+.seg-btn:hover { color: var(--ink); background: color-mix(in oklab, var(--accent-soft) 8%, transparent); }
+.seg-btn.on { background: var(--accent); color: var(--bg); }
+.check { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--ink-soft); cursor: pointer; }
+.kwrap[hidden] { display: none; }
+
+.sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.4rem 1.4rem; margin-bottom: 0.8rem; }
+.sl { display: grid; grid-template-columns: 5.8rem 1fr 2rem; align-items: center; gap: 0.6rem; }
+.sl-name { color: var(--ink-soft); font-size: 0.88rem; }
+.sl-val { font-family: var(--font-mono); font-size: 0.9rem; text-align: right; }
+.sl-val.wide { min-width: 6.5rem; }
+.sl:has(.wide) { grid-template-columns: 5.8rem 1fr 6.5rem; }
+input[type="range"] { width: 100%; accent-color: var(--accent-soft); }
+
+.player { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.8rem; }
+.btn.icon {
+  width: 2.1rem; height: 2.1rem; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--bg); color: var(--ink); cursor: pointer; font-size: 0.95rem; line-height: 1;
+}
+.btn.icon:hover:not(:disabled) { border-color: var(--accent-soft); }
+.btn.icon:disabled { opacity: 0.4; cursor: default; }
+.progress { flex: 1; height: 4px; background: var(--rule); border-radius: 2px; margin: 0 0.5rem; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent-soft); transition: width calc(0.35s / var(--speed, 1)) ease; }
+.counter { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); min-width: 3.4rem; text-align: right; }
+
+.eq-line { margin-top: 0.7rem; min-height: 1.8rem; text-align: center; overflow-x: auto; overflow-y: hidden; font-family: var(--font-serif); font-size: 1.05rem; }
+.eq-line.mono { font-family: var(--font-mono); font-size: 0.92rem; }
+.eq-line.bad { color: var(--obs); }
+.widget-note { margin: 0.4rem 0 0; color: var(--ink-soft); font-size: 0.9rem; text-align: center; min-height: 1.4em; }
+.mono { font-family: var(--font-mono); }
+
+/* ===================================================== */
+/* SVG DELLE FIGURE                                      */
+/* ===================================================== */
+.fig-svg { display: block; width: 100%; height: auto; max-height: 75vh; margin: 0 auto; overflow: visible; font-family: var(--font-sans); }
+.cell { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 1; stroke-opacity: 0.55; transition: fill calc(0.3s / var(--speed, 1)) ease; }
+.cell-text { fill: var(--ink); text-anchor: middle; dominant-baseline: central; font-family: var(--font-serif); pointer-events: none; }
+.cell-text.faint { fill: var(--ink-soft); opacity: 0.6; }
+.sym .cell-text { font-style: italic; font-size: 20px; }
+.g-input .cell { fill: color-mix(in oklab, var(--accent-soft) 7%, var(--surface)); }
+.g-kernel .cell, .cell.k { fill: color-mix(in oklab, var(--hot) 9%, var(--surface)); }
+.g-output .cell, .cell.out { fill: color-mix(in oklab, var(--lemma) 6%, var(--surface)); }
+.cell.out.done { fill: color-mix(in oklab, var(--lemma) 22%, var(--surface)); }
+.cell.out.active, .g-output .cell.active { fill: color-mix(in oklab, var(--lemma) 45%, var(--surface)); stroke: var(--lemma); stroke-width: 2.5; stroke-opacity: 1; }
+.g-output .cell.done { fill: color-mix(in oklab, var(--lemma) 22%, var(--surface)); }
+.kcell-g { transition: transform calc(0.7s / var(--speed, 1)) cubic-bezier(0.6, 0, 0.3, 1); }
+
+.label { fill: var(--ink-soft); font-size: 13px; text-anchor: middle; }
+.label.small { font-size: 11px; }
+.label.mono { font-family: var(--font-mono); font-size: 11px; }
+.sub { fill: var(--hot); font-size: 11px; font-style: italic; font-family: var(--font-serif); font-weight: 700; }
+.op { fill: var(--ink-soft); font-size: 26px; text-anchor: middle; dominant-baseline: central; }
+.expr { fill: var(--ink); font-family: var(--font-serif); font-style: italic; font-size: 15px; text-anchor: middle; }
+.partial { fill: var(--blue); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.arrow { stroke: var(--ink-soft); stroke-width: 1.6; fill: none; }
+.arrowhead { fill: var(--ink-soft); }
+
+/* finestra del kernel: si sposta con il transform */
+.win-g { transition: transform calc(0.5s / var(--speed, 1)) cubic-bezier(0.5, 0, 0.25, 1), opacity calc(0.3s / var(--speed, 1)); }
+.win { fill: color-mix(in oklab, var(--hot) 10%, transparent); stroke: var(--hot); stroke-width: 3; }
+.win.blue { stroke: var(--blue); fill: color-mix(in oklab, var(--blue) 10%, transparent); }
+.win.dashed { stroke-dasharray: 6 4; fill: none; stroke-width: 2.5; }
+.win.off { opacity: 0.15; }
+rect.win { transition: opacity calc(0.3s / var(--speed, 1)); }
+.tap { fill: color-mix(in oklab, var(--accent-soft) 70%, transparent); stroke: none; }
+
+
+/* velocità del player */
+.speed { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-left: 0.3rem; }
+.speed-btn {
+  border: 0; border-right: 1px solid var(--rule); background: transparent; color: var(--ink-soft);
+  font: inherit; font-family: var(--font-mono); font-size: 0.75rem; padding: 0 0.45rem; height: 2.1rem; cursor: pointer;
+}
+.speed-btn:last-child { border-right: 0; }
+.speed-btn:hover { color: var(--ink); }
+.speed-btn.on { background: var(--accent); color: var(--bg); }
+@media (max-width: 480px) { .counter { display: none; } }

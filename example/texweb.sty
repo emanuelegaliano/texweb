@@ -1,0 +1,25 @@
+% texweb.sty: i comandi di texweb per la versione PDF.
+% Va in \usepackage{texweb} (copiato accanto al .tex, oppure nel TEXINPUTS).
+%
+%   \begin{widget}{nome}[opzioni]
+%     figura per il PDF (un tikzpicture, un \includegraphics, ...)
+%   \end{widget}
+%
+% Nel PDF il nome e le opzioni vengono ignorati e si stampa la figura.
+% La figura è obbligatoria: se manca, LaTeX dà un avviso e al suo posto compare un riquadro
+% rosso che lo segnala (texweb check e texweb build lo trattano come un errore).
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{texweb}[2026/10/28 texweb: componenti interattivi nella versione web]
+\RequirePackage{xcolor}
+
+\NewDocumentEnvironment{widget}{m O{} +b}{%
+  \IfBlankTF{#3}{%
+    \PackageWarning{texweb}{Il widget '#1' non ha una figura per il PDF.\MessageBreak
+      Mettila tra \protect\begin{widget} e \protect\end{widget}}%
+    \begin{center}
+    \fcolorbox{red!70!black}{red!5}{\parbox{0.8\linewidth}{\centering\sffamily\small
+      \textcolor{red!70!black}{\textbf{Figura mancante}}\\
+      il widget \texttt{#1} non ha una figura per il PDF}}%
+    \end{center}%
+  }{#3}%
+}{}

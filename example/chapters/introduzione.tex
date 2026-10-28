@@ -1,0 +1,37 @@
+\chapter{Come funziona texweb}\label{ch:intro}
+Questi appunti si scrivono in \LaTeX{}, come sempre: lo stesso sorgente produce il PDF con \texttt{pdflatex} e il sito con \texttt{texweb dev}. Riferimenti, citazioni e numerazione funzionano in entrambi, ad esempio il capitolo~\ref{ch:conv} parla di convoluzione e cita \cite{Goodfellow-et-al-2016}.
+
+\section{Cosa si può scrivere}
+Il dialetto contiene i comandi di tutti i giorni: \textbf{grassetto}, \emph{corsivo}, \texttt{codice}, note a piè di pagina\footnote{Come questa, numerate per pagina.} e formule come $f(x) = \max\{0, x\}$ oppure
+\begin{equation}\label{eq:loss}
+  \mathcal{L}(\vartheta) = \frac{1}{N}\sum_{i=1}^{N} \big(y^{(i)} - h(x^{(i)}; \vartheta)\big)^2, \qquad \vartheta \in \R^d.
+\end{equation}
+L'equazione~\eqref{eq:loss} è la MSE.
+
+\begin{definizione}[Funzione di loss]\label{def:loss}
+Una \textbf{funzione di loss} misura l'errore commesso dal modello nel predire $y$ a partire da $x$.
+\end{definizione}
+
+La definizione~\ref{def:loss} è numerata per capitolo, come nel PDF.
+
+\begin{itemize}
+  \item gli elenchi puntati,
+  \item gli elenchi numerati e le tabelle,
+  \item le figure TikZ, compilate da \LaTeX{} in SVG.
+\end{itemize}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Modello & Parametri & Layer \\
+\midrule
+MLP & 397\,510 & 2 \\
+CNN & 156 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Parametri del primo layer per MNIST.}
+\label{tab:param}
+\end{table}
+
+Nella tabella~\ref{tab:param} si vede il risparmio di parametri.

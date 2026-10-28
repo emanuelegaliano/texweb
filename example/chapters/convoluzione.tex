@@ -1,0 +1,70 @@
+\chapter{La convoluzione}\label{ch:conv}
+\section{Cross-correlation}
+Sia $F$ l'immagine in input e $h$ un kernel di dimensione $(2k+1) \times (2k+1)$. La \textbf{cross-correlation} si definisce come:
+\[
+G[i, j] = \sum_{u=-k}^{k}\sum_{v=-k}^{k} h[u, v]\, F[i + u, j + v].
+\]
+
+\begin{osservazione}
+Quella che nelle CNN chiamiamo convoluzione è quasi sempre una cross-correlation \cite[cap.~9]{Goodfellow-et-al-2016}.
+\end{osservazione}
+
+\paragraph{Esempio.}
+Applichiamo all'immagine $5 \times 5$ della figura~\ref{fig:sharpen} il kernel di \emph{sharpening}. Il salto tra le due zone, che nell'input era da 2 a 8, nell'output diventa da $-4$ a 14: il kernel accentua i bordi.
+
+\begin{figure}[htbp]
+\centering
+\begin{widget}{sharpen}[input={{2,2,2,8,8},{2,2,2,8,8},{2,2,2,8,8},{2,2,8,8,8},{2,2,8,8,8}}, kernel={{0,-1,0},{-1,5,-1},{0,-1,0}}, interval=1100]
+\begin{tikzpicture}
+  \numgrid{(0,0)}{0.5}{{2,2,2,8,8},{2,2,2,8,8},{2,2,2,8,8},{2,2,8,8,8},{2,2,8,8,8}}
+  \cellrect[very thick, red!70!black]{(0,0)}{0.5}{1}{0}{3}{3}
+  \node at (2.95,-1.25) {$\otimes$};
+  \numgrid[fill=red!8]{(3.4,-0.5)}{0.5}{{0,-1,0},{-1,5,-1},{0,-1,0}}
+  \node at (5.35,-1.25) {$=$};
+  \numgrid[fill=green!10]{(5.8,-0.5)}{0.5}{{2,-4,14},{2,-10,14},{-4,20,8}}
+\end{tikzpicture}
+\end{widget}
+\caption{Il kernel di sharpening applicato a un'immagine $5 \times 5$. Nel PDF si vede la figura statica, sul sito il kernel scorre posizione per posizione.}
+\label{fig:sharpen}
+\end{figure}
+
+\section{Padding e stride}
+La dimensione dell'output di un layer convoluzionale è
+\[
+\text{output} = \frac{W - F + 2P}{S} + 1,
+\]
+dove $W$ è il lato dell'input, $F$ quello del kernel, $P$ il padding e $S$ lo stride \cite{Dumoulin2016}. Nella figura~\ref{fig:params} puoi cambiare tutti i parametri.
+
+\begin{figure}[htbp]
+\centering
+\begin{widget}{conv-params}[W=7, F=3, S=2, presets]
+\begin{tikzpicture}[>=Stealth]
+  % input 7x7, kernel 3x3 in due posizioni con stride 2, output 3x3
+  \fill[Accent!20] (0,0) rectangle (2.625,-2.625);
+  \draw[step=0.375, black!50] (0,0) grid (2.625,-2.625);
+  \draw[very thick, red!70!black] (0,0) rectangle (1.125,-1.125);
+  \draw[very thick, LemmaColor!70!black] (0.79,-0.04) rectangle (1.875,-1.125);
+  \draw[->, thick] (2.9,-1.3125) -- (3.8,-1.3125);
+  \fill[LemmaColor!30] (4.1,-0.375) rectangle (5.225,-1.5);
+  \draw[step=0.375, black!50, shift={(4.1,-0.375)}] (0,0) grid (1.125,-1.125);
+  \fill[red!60] (4.1,-0.375) rectangle ++(0.375,-0.375);
+  \fill[LemmaColor!80!black] (4.475,-0.375) rectangle ++(0.375,-0.375);
+  \node[font=\scriptsize] at (1.3125,0.3) {input $7 \times 7$};
+  \node[font=\scriptsize] at (4.6625,0) {output $3 \times 3$};
+\end{tikzpicture}
+\end{widget}
+\caption{La formula della dimensione dell'output, con i parametri modificabili. Nel PDF c'è la figura statica, con $W = 7$, $F = 3$ e $S = 2$.}
+\label{fig:params}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \foreach \i in {0,...,4} \draw[black!40] (\i*0.5,0) rectangle ++(0.5,0.5);
+  \draw[very thick, Accent] (0,0) rectangle (1.5,0.5);
+  \draw[->, thick] (2.8,0.25) -- (3.8,0.25);
+  \foreach \i in {0,...,2} \draw[black!40, fill=LemmaColor!25] (4+\i*0.5,0) rectangle ++(0.5,0.5);
+\end{tikzpicture}
+\caption{Una figura TikZ senza widget: sul sito è lo stesso SVG del PDF, compilato dallo stesso preambolo.}
+\label{fig:static}
+\end{figure}

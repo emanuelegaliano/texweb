@@ -1,0 +1,33 @@
+/* archi: verdi i pesi positivi, rossi quelli negativi */
+.rete .edge { stroke-opacity: 0.22; transition: stroke-opacity calc(0.4s / var(--speed, 1)); }
+.rete .edge.pos { stroke: var(--accent-soft); }
+.rete .edge.neg { stroke: var(--hot); }
+
+/* l'arco acceso: il tratteggio che scorre fa vedere il segnale che passa */
+.rete .edge.on {
+  stroke-opacity: 1;
+  stroke-dasharray: 8 6;
+  animation: rete-flow calc(0.6s / var(--speed, 1)) linear infinite;
+}
+@keyframes rete-flow { to { stroke-dashoffset: -14; } }
+
+/* neuroni: il colore di riempimento segue il valore (--level va da 0 a 1) */
+.rete .neuron circle {
+  fill: color-mix(in oklab, var(--accent) calc(var(--level, 0) * 75%), var(--surface));
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  /* le durate si dividono per --speed: a 2× tutto va due volte più veloce */
+  transition: fill calc(0.5s / var(--speed, 1)) ease, stroke calc(0.3s / var(--speed, 1)), stroke-width calc(0.3s / var(--speed, 1));
+}
+.rete .neuron.active circle { stroke: var(--hot); stroke-width: 3; }
+.rete .neuron.off circle { fill: var(--surface); }
+.rete .value {
+  fill: var(--ink); font-family: var(--font-mono); font-size: 12px;
+  text-anchor: middle; dominant-baseline: central; transition: fill calc(0.3s / var(--speed, 1));
+}
+.rete .neuron.strong .value { fill: var(--surface); }
+.rete .name { fill: var(--ink-soft); font-family: var(--font-serif); font-style: italic; font-size: 15px; text-anchor: middle; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rete .edge.on { animation: none; }
+}

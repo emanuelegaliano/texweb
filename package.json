@@ -1,0 +1,41 @@
+{
+  "name": "texweb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scrivi gli appunti in LaTeX, pubblicali come sito con figure interattive",
+  "keywords": [
+    "latex",
+    "tikz",
+    "notes",
+    "static-site",
+    "katex",
+    "vite",
+    "interactive-figures"
+  ],
+  "author": "Emanuele Galiano",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emanuelegaliano/texweb.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "texweb": "./bin/texweb.js"
+  },
+  "scripts": {
+    "dev": "node bin/texweb.js dev example",
+    "build": "node bin/texweb.js build example",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/libertinus-serif": "^5.3.0",
+    "@fontsource/source-sans-3": "^5.2.8",
+    "@unified-latex/unified-latex-util-parse": "^1.8.4",
+    "katex": "^0.16.22",
+    "vite": "^7.1.12"
+  }
+}

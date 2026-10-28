@@ -1,0 +1,4 @@
+.cell.in { fill: color-mix(in oklab, var(--accent-soft) 20%, var(--surface)); }
+.cell.pad { fill: var(--surface); stroke-dasharray: 3 3; }
+.cell.uncov { fill: color-mix(in oklab, var(--obs) 35%, var(--surface)); }
+.cp-stage { min-height: 8rem; }

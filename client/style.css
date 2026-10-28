@@ -1,0 +1,234 @@
+@import './toolkit.css';
+
+/* ===================================================== */
+/* PALETTE                                               */
+/* I colori --base-* arrivano dai \definecolor del       */
+/* preambolo; in dark mode si schiariscono da soli.      */
+/* ===================================================== */
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #1e2426;
+  --ink-soft: #4b5458;
+  --rule: #d9d5cc;
+  --accent: var(--base-accent, #0b3a3e);
+  --accent-soft: color-mix(in oklab, var(--accent) 70%, #5fb3b9);
+  --obs: var(--base-obs, #9c5a12);
+  --fig: var(--base-fig, #6b3f73);
+  --lemma: var(--base-lemma, #4e7a3a);
+  --ex: var(--base-ex, #4a5560);
+  --hot: #b3261e;
+  --blue: #1f4fa0;
+  --c1: #b3261e; --c2: #0b6e75; --c3: #1f4fa0; --c4: #9c5a12; --c5: #6b3f73;
+  --font-serif: 'Libertinus Serif', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tikz-filter: none;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111516; --surface: #182022; --ink: #e4e7e4; --ink-soft: #a5aeab; --rule: #34403f;
+    --accent: color-mix(in oklab, var(--base-accent, #0b3a3e) 35%, #d8f1f2);
+    --obs: color-mix(in oklab, var(--base-obs, #9c5a12) 55%, #ffe2bf);
+    --fig: color-mix(in oklab, var(--base-fig, #6b3f73) 45%, #f3dcf8);
+    --lemma: color-mix(in oklab, var(--base-lemma, #4e7a3a) 50%, #e1f5d5);
+    --ex: color-mix(in oklab, var(--base-ex, #4a5560) 45%, #e8eef3);
+    --hot: #ff7b6e; --blue: #8fb3ff;
+    --c1: #ff7b6e; --c2: #6fd0d6; --c3: #8fb3ff; --c4: #e3a55c; --c5: #c9a0d3;
+    --tikz-filter: invert(1) hue-rotate(180deg);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111516; --surface: #182022; --ink: #e4e7e4; --ink-soft: #a5aeab; --rule: #34403f;
+  --accent: color-mix(in oklab, var(--base-accent, #0b3a3e) 35%, #d8f1f2);
+  --obs: color-mix(in oklab, var(--base-obs, #9c5a12) 55%, #ffe2bf);
+  --fig: color-mix(in oklab, var(--base-fig, #6b3f73) 45%, #f3dcf8);
+  --lemma: color-mix(in oklab, var(--base-lemma, #4e7a3a) 50%, #e1f5d5);
+  --ex: color-mix(in oklab, var(--base-ex, #4a5560) 45%, #e8eef3);
+  --hot: #ff7b6e; --blue: #8fb3ff;
+  --c1: #ff7b6e; --c2: #6fd0d6; --c3: #8fb3ff; --c4: #e3a55c; --c5: #c9a0d3;
+  --tikz-filter: invert(1) hue-rotate(180deg);
+  color-scheme: dark;
+}
+
+/* ===================================================== */
+/* BASE E IMPAGINAZIONE                                  */
+/* ===================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-serif); font-size: 1.15rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-soft); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.katex { font-size: 1.05em; }
+
+.tw-topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0.6rem 1rem; font-family: var(--font-sans);
+  background: color-mix(in oklab, var(--bg) 88%, transparent); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.tw-brand { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tw-theme { flex: none; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 999px; width: 2.1rem; height: 2.1rem; cursor: pointer; }
+
+.tw-layout { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 80rem; margin: 0 auto; padding: 0 1rem; }
+@media (min-width: 1100px) { .tw-layout { grid-template-columns: 16rem minmax(0, 1fr); gap: 3rem; } }
+
+.tw-nav { display: none; font-family: var(--font-sans); font-size: 0.88rem; }
+@media (min-width: 1100px) {
+  .tw-nav { display: block; position: sticky; top: 4.5rem; align-self: start; max-height: calc(100vh - 5.5rem); overflow: auto; padding: 2.5rem 0 2rem; }
+}
+.tw-nav ol { list-style: none; margin: 0; padding: 0; }
+.tw-nav a { display: block; color: var(--ink-soft); text-decoration: none; padding: 0.22rem 0.6rem; border-left: 2px solid transparent; }
+.tw-nav a:hover { color: var(--ink); }
+.tw-nav-part { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; color: var(--ink-soft); margin: 1rem 0 0.3rem 0.6rem; }
+.tw-nav-ch.current > a { color: var(--accent); font-weight: 600; border-left-color: var(--accent); }
+.tw-nav-sec { margin: 0.2rem 0 0.6rem !important; }
+.tw-nav-sec a { padding-left: 1.4rem; font-size: 0.82rem; }
+.tw-nav-sec .lv-subsection a { padding-left: 2.3rem; }
+.tw-nav-sec a.current { color: var(--accent); border-left-color: var(--accent-soft); }
+.tw-nav-num { display: inline-block; min-width: 2.4rem; color: var(--ink-soft); opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+.tw-main { max-width: 44rem; min-width: 0; padding: 2.5rem 0 5rem; }
+
+/* ===================================================== */
+/* TITOLI                                                */
+/* ===================================================== */
+.tw-chapter-head { margin-bottom: 2.2rem; }
+.tw-chapter-num { font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.8rem; color: var(--accent-soft); margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.1; margin: 0.3rem 0 0; color: var(--accent); }
+h2 { font-size: 1.6rem; color: var(--accent); margin: 3.2rem 0 1rem; line-height: 1.2; }
+h3 { font-size: 1.28rem; color: var(--accent); margin: 2.4rem 0 0.8rem; }
+h4 { font-size: 1.1rem; margin: 1.8rem 0 0.5rem; }
+.tw-secnum { font-family: var(--font-sans); font-weight: 600; color: var(--accent-soft); margin-right: 0.7em; font-size: 0.85em; }
+.tw-runin { font-weight: 700; }
+.tw-cover h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); }
+.tw-author { font-family: var(--font-sans); color: var(--ink-soft); }
+.tw-index { font-family: var(--font-sans); font-size: 1.05rem; padding: 0; list-style: none; }
+.tw-index li { border-bottom: 1px solid var(--rule); }
+.tw-index a { display: block; padding: 0.7rem 0.2rem; text-decoration: none; color: var(--ink); }
+.tw-index a:hover { color: var(--accent); }
+
+p, li { hyphens: auto; }
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.25rem 0; }
+li.tw-custom { list-style: none; position: relative; }
+li.tw-custom::before { content: attr(data-label); position: absolute; left: -1.4rem; }
+.tw-dl dt { font-weight: 700; }
+.tw-dl dd { margin: 0 0 0.6rem 1.4rem; }
+.tw-sf { font-family: var(--font-sans); }
+.tw-sc { font-variant: small-caps; }
+.tw-nobr { white-space: nowrap; }
+.tw-center { text-align: center; }
+code { font-family: var(--font-mono); font-size: 0.86em; }
+blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--rule); color: var(--ink-soft); }
+.tw-latex sup, .tw-latex sub { font-size: 0.75em; text-transform: uppercase; }
+.tw-latex sup { vertical-align: 0.25em; margin-left: -0.3em; margin-right: -0.1em; }
+.tw-latex sub { vertical-align: -0.25em; margin-left: -0.1em; margin-right: -0.1em; }
+
+/* ===================================================== */
+/* BOX (come i tcolorbox del preambolo)                  */
+/* ===================================================== */
+.tw-box { margin: 1.4rem 0; padding: 0.7rem 1rem 0.7rem 1.1rem; border-left: 3px solid var(--box); background: color-mix(in oklab, var(--box) 8%, var(--bg)); --box: var(--accent); }
+.tw-box > p:first-child, .tw-box-split > div > p:first-child { margin-top: 0.2rem; }
+.tw-box p:last-child { margin-bottom: 0.2rem; }
+.tw-box-title { font-family: var(--font-sans); font-weight: 600; color: var(--box); font-size: 0.95rem; }
+.tw-box-accent { --box: var(--accent); }
+.tw-box-obs { --box: var(--obs); }
+.tw-box-lemma { --box: var(--lemma); }
+.tw-box-ex { --box: var(--ex); }
+.tw-box-plain { --box: var(--rule); background: transparent; border-left-width: 1px; }
+.tw-box-plain .tw-box-title { color: var(--ink); }
+.tw-box-proof { --box: var(--rule); background: transparent; border-left-width: 1px; }
+.tw-box-proof .tw-box-title { color: var(--ink); font-style: italic; font-family: var(--font-serif); font-weight: 400; }
+.tw-box-split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; align-items: center; }
+@media (max-width: 640px) { .tw-box-split { grid-template-columns: 1fr; } }
+
+/* ===================================================== */
+/* FIGURE, TABELLE, ALGORITMI                            */
+/* ===================================================== */
+.tw-float { margin: 2rem 0; }
+.tw-float figcaption {
+  font-size: 0.96rem; line-height: 1.5; margin-top: 0.8rem; padding: 0.55rem 0.9rem;
+  border-left: 3px solid var(--fig); background: color-mix(in oklab, var(--fig) 7%, var(--bg));
+}
+.tw-table figcaption, .tw-algorithm figcaption { margin: 0 0 0.8rem; }
+.tw-figlabel { font-weight: 700; color: var(--fig); }
+.tw-float > p { text-align: center; }
+.tw-tikz, .tw-img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.tw-tikz { filter: var(--tikz-filter); }
+.tw-float .tw-img { display: inline-block; vertical-align: middle; }
+:root[data-theme="dark"] .tw-img { filter: var(--tikz-filter); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tw-img { filter: var(--tikz-filter); } }
+.tw-tikz-error, .tw-missing { display: block; padding: 0.8rem 1rem; border: 1px dashed var(--hot); color: var(--hot); font-family: var(--font-sans); font-size: 0.9rem; border-radius: 6px; }
+.tw-group > p:first-child { margin-top: 0; }
+
+.tw-table-wrap { overflow-x: auto; }
+.tw-table { border-collapse: collapse; margin: 0 auto; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.tw-table td { padding: 0.3rem 0.8rem; }
+.tw-table .tw-l { text-align: left; } .tw-table .tw-c { text-align: center; } .tw-table .tw-r { text-align: right; }
+.tw-table tr.rule-above-top { border-top: 1.5px solid var(--ink); }
+.tw-table tr.rule-above-mid { border-top: 0.8px solid var(--ink-soft); }
+.tw-table tr.rule-below-bottom { border-bottom: 1.5px solid var(--ink); }
+
+.tw-algo { font-size: 0.98rem; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); padding: 0.5rem 0; }
+.tw-algo-line { display: flex; gap: 0.6rem; padding-left: calc(var(--d) * 1.4rem); }
+.tw-ln { flex: none; width: 1.6rem; margin-left: calc(var(--d) * -1.4rem); padding-right: calc(var(--d) * 1.4rem); box-sizing: content-box; text-align: right; color: var(--ink-soft); font-family: var(--font-sans); font-size: 0.8rem; padding-top: 0.15rem; }
+.tw-comment { color: var(--ink-soft); }
+
+.tw-code { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.9rem; line-height: 1.5; }
+.tw-code code { font-size: 1em; }
+
+.tw-math { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }
+
+/* riferimenti, citazioni, note */
+.tw-ref, .tw-cite { text-decoration: none; }
+.tw-ref:hover, .tw-cite:hover { text-decoration: underline; }
+.tw-badref, .tw-unknown { color: var(--hot); font-weight: 700; }
+.tw-unknown-env { outline: 1px dashed var(--hot); outline-offset: 4px; }
+.tw-fnref { font-size: 0.75em; line-height: 0; }
+.tw-fnref a { text-decoration: none; }
+.tw-footnotes { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.92rem; }
+.tw-bib li { margin: 0.6rem 0; }
+.tw-bib li:target { background: color-mix(in oklab, var(--accent-soft) 15%, transparent); }
+
+.tw-pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-family: var(--font-sans); font-size: 0.92rem; }
+.tw-pager a { text-decoration: none; }
+.tw-pager .next { margin-left: auto; text-align: right; }
+
+/* ===================================================== */
+/* WIDGET                                                */
+/* ===================================================== */
+.tw-widget { position: relative; }
+.tw-widget-body:empty { display: none; }
+.tw-widget.mounted .tw-widget-body {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem;
+  font-family: var(--font-sans); font-size: 0.95rem;
+}
+.tw-widget.mounted::after {
+  content: 'interattiva'; position: absolute; top: -0.65rem; right: 0.8rem; padding: 0 0.45rem;
+  font-family: var(--font-sans); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--fig); background: var(--bg); border: 1px solid color-mix(in oklab, var(--fig) 40%, transparent); border-radius: 999px;
+}
+
+/* errori e avvisi, solo in sviluppo */
+.tw-diag { margin: 0 0 2rem; font-family: var(--font-sans); font-size: 0.88rem; border: 1px solid var(--hot); border-radius: 8px; background: color-mix(in oklab, var(--hot) 6%, var(--bg)); }
+.tw-diag summary { cursor: pointer; padding: 0.5rem 0.9rem; color: var(--hot); font-weight: 600; }
+.tw-diag ul { margin: 0; padding: 0 0.9rem 0.7rem 2rem; max-height: 16rem; overflow: auto; }
+.tw-diag li.warning { color: var(--ink-soft); }
+.tw-diag code { font-size: 0.82rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}
+@media (max-width: 640px) {
+  body { font-size: 1.06rem; }
+  .tw-widget.mounted .tw-widget-body { padding: 0.7rem; }
+}
