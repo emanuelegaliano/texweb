@@ -38,6 +38,8 @@ Run `texweb check` on an existing project to see what is missing before you star
 
 Numbering follows the `book` class: parts with Roman numerals (shown as headings in the home index and in the sidebar, with their chapters grouped under them; `\backmatter` closes the last part), chapters, sections down to `\subsubsection`; figures, tables, algorithms, equations and numbered boxes within the chapter (`3.4`); appendix chapters with letters. A `\label` refers to the last numbered thing before it, as in LaTeX; inside a figure it always refers to the figure.
 
+The number of an equation sits at the right edge, as in the PDF. When a formula leaves too little room for it, the formula moves left, as LaTeX does; on a screen narrower than the formula and its number (phones), the two scroll together instead of overlapping.
+
 ## Preamble macros
 
 Macros defined with `\newcommand` (with or without arguments, with a default for the first one) are expanded in the text, and passed to KaTeX for formulas. Macros defined with `\def` or `\NewDocumentCommand` are not expanded: inside TikZ figures they work anyway, because LaTeX compiles them.

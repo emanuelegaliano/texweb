@@ -568,7 +568,9 @@ export class Renderer {
   }
 
   displayMath(tex, ctx, node, id = '') {
-    return `<div class="tw-math"${id ? ` id="${id}"` : ''}>${this.math(tex, true, ctx, node)}</div>`;
+    const html = this.math(tex, true, ctx, node);
+    const numbered = tagBeside(html);
+    return `<div class="tw-math${numbered ? ' tw-numbered' : ''}"${id ? ` id="${id}"` : ''}>${numbered ?? html}</div>`;
   }
 
   mathEnv(n, ctx, flow) {
@@ -752,6 +754,17 @@ function parseColSpec(spec) {
     else if (ch === '@' || ch === '>' || ch === '<' || ch === '!') { if (spec[i + 1] === '{') { const g = readBalanced(spec, i + 1); i = g ? g[1] - 1 : i; } }
   }
   return cols;
+}
+
+// KaTeX puts the number of an equation inside the formula, absolutely positioned at its right edge: a
+// formula wider than the screen scrolls under it. The number is moved beside .katex-html (still inside
+// .katex, for its fonts) and laid out as a column of its own by .tw-numbered in the stylesheet.
+// Returns null when the formula has no number.
+function tagBeside(html) {
+  const i = html.lastIndexOf('<span class="tag">');
+  const close = '</span></span></span>'; // .katex-html, .katex, .katex-display: the number is their last child
+  if (i < 0 || !html.endsWith(close)) return null;
+  return `${html.slice(0, i)}</span>${html.slice(i, -close.length)}</span></span>`;
 }
 
 // width=0.5\textwidth -> width:50%; height=16mm -> height:60px

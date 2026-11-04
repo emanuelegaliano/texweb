@@ -156,6 +156,18 @@ PROGRAM P
   assert.match(html, /<pre class="tw-code" data-lang="Fortran"><code>PROGRAM P<\/code><\/pre>/);
 });
 
+test('equation numbers are moved beside the formula, out of the KaTeX box', () => {
+  const { html, diag } = render('\\chapter{A}\n\\begin{equation} x = 1 \\end{equation}\n\\[ y = 2 \\]');
+  assert.deepEqual(diag.items, []);
+  const eq = html.slice(html.indexOf('<div class="tw-math tw-numbered" id="eq-'));
+  const before = eq.slice(0, eq.indexOf('<span class="tag">'));
+  // two spans open where the number starts: .katex-display > .katex, so beside .katex-html, not inside it
+  assert.equal(before.match(/<span\b/g).length - before.match(/<\/span>/g).length, 2);
+  assert.match(eq, /<span class="tag">.*1\.1.*<\/span><\/span><\/span><\/div>/);
+  // a formula without a number keeps KaTeX's markup
+  assert.match(html, /<div class="tw-math"><span class="katex-display">/);
+});
+
 test('language of a listing from minted, language=, style= and \\lstset', async () => {
   const { listingLanguage } = await import('../src/highlight.js');
   const listings = readPreamble('\\lstset{language=bash}\n\\lstdefinestyle{code}{language={[3]Python}}\n\\begin{document}').listings;

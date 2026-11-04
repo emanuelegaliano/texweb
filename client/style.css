@@ -213,6 +213,12 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 .tw-code .hljs-meta { color: var(--ink-soft); }
 
 .tw-math { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }
+/* numbered formulas: the number is a column of its own, at the right edge. While there is room the
+   formula is centered, as in KaTeX; then it moves left to make room for the number, as in LaTeX; on a
+   screen narrower than both, the formula and its number scroll together instead of overlapping */
+.tw-numbered > .katex-display > .katex { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr); align-items: baseline; }
+.tw-numbered > .katex-display > .katex > .katex-html { grid-column: 2; }
+.tw-numbered > .katex-display > .katex > .tag { grid-column: 3; justify-self: end; padding-left: 1em; }
 
 /* references, citations, footnotes */
 .tw-ref, .tw-cite { text-decoration: none; }
