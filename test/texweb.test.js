@@ -11,13 +11,13 @@ import { Renderer } from '../src/render.js';
 import { detectLang } from '../src/locale.js';
 
 // renders a minimal document and returns the pages and the diagnostics
-function render(body, { preamble = '', bib = '', widgets = new Map(), lang = 'en' } = {}) {
+function render(body, { preamble = '', bib = '', widgets = new Map(), lang = 'en', config = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'texweb-'));
   const main = path.join(dir, 'main.tex');
   const src = `\\documentclass{book}\n${preamble}\n\\begin{document}\n${body}\n\\end{document}\n`;
   fs.writeFileSync(main, src);
   const diag = new Diagnostics(dir);
-  const r = new Renderer({ root: dir, preamble: readPreamble(src), diag, bib: parseBib(bib), widgets, config: { lang, katexMacros: {} } });
+  const r = new Renderer({ root: dir, preamble: readPreamble(src), diag, bib: parseBib(bib), widgets, config: { lang, katexMacros: {}, ...config } });
   r.renderDocument(main);
   const html = r.pages.map((p) => p.chunks.join('\n')).join('\n');
   return { r, diag, html };
@@ -130,4 +130,39 @@ test('bitmaps referenced by TikZ SVGs are embedded', async () => {
   assert.match(out, /xlink:href='data:image\/png;base64,iVBORw=='/);
   assert.match(out, /xlink:href='missing\.png'/);
   assert.match(out, /xlink:href='#g1'/);
+});
+
+test('code highlighting only with the highlight option, language from the listings style', () => {
+  const preamble = String.raw`\usepackage{listings}
+\lstdefinestyle{py}{language=Python, basicstyle=\ttfamily}`;
+  const body = String.raw`\begin{lstlisting}[style=py]
+import spacy
+# a comment
+x = "a < b"
+\end{lstlisting}
+\begin{lstlisting}[language=Fortran]
+PROGRAM P
+\end{lstlisting}`;
+  // without the option the output does not change: plain escaped code
+  const plain = render(body, { preamble }).html;
+  assert.match(plain, /<pre class="tw-code" data-lang="py"><code>import spacy\n# a comment\nx = "a &lt; b"<\/code><\/pre>/);
+  assert.doesNotMatch(plain, /hljs/);
+  // with the option: spans by role, the style resolved through \lstdefinestyle, unknown languages left plain
+  const { html, diag } = render(body, { preamble, config: { highlight: true } });
+  assert.equal(diag.errors.length, 0);
+  assert.match(html, /<pre class="tw-code" data-lang="py"><code class="hljs language-python"><span class="hljs-keyword">import<\/span> spacy/);
+  assert.match(html, /<span class="hljs-comment"># a comment<\/span>/);
+  assert.match(html, /<span class="hljs-string">&quot;a &lt; b&quot;<\/span>/);
+  assert.match(html, /<pre class="tw-code" data-lang="Fortran"><code>PROGRAM P<\/code><\/pre>/);
+});
+
+test('language of a listing from minted, language=, style= and \\lstset', async () => {
+  const { listingLanguage } = await import('../src/highlight.js');
+  const listings = readPreamble('\\lstset{language=bash}\n\\lstdefinestyle{code}{language={[3]Python}}\n\\begin{document}').listings;
+  assert.deepEqual(listings, { styles: { code: 'Python' }, language: 'bash' });
+  assert.equal(listingLanguage('\\begin{minted}{js}', listings), 'javascript');
+  assert.equal(listingLanguage('\\begin{lstlisting}[language=C++]', listings), 'cpp');
+  assert.equal(listingLanguage('\\begin{lstlisting}[style=code]', listings), 'python');
+  assert.equal(listingLanguage('\\begin{lstlisting}', listings), 'bash');
+  assert.equal(listingLanguage('\\begin{verbatim}', listings), null);
 });

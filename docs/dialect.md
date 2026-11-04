@@ -25,7 +25,7 @@ Run `texweb check` on an existing project to see what is missing before you star
 | tables | `tabular`, `tabular*`, `booktabs` rules, `\hline`, `\multicolumn`, column alignment |
 | boxes | `tcolorbox`/`amsthm`-style environments, see [configuration](configuration.md#boxes) |
 | algorithms | `algorithmic` from `algpseudocode`: `\State`, `\If`, `\ElsIf`, `\Else`, `\For`, `\ForAll`, `\While`, `\Repeat`/`\Until`, `\Loop`, `\Function`, `\Procedure`, `\Require`, `\Ensure`, `\Return`, `\Comment`, `\Call` |
-| code | `lstlisting`, `verbatim`, `minted`, `\verb` |
+| code | `lstlisting`, `verbatim`, `minted`, `\verb` (colored with the [`highlight`](configuration.md#code-highlighting) option) |
 | other | `quote`, `quotation`, `center`, `flushleft`, `flushright`, `minipage` |
 | skipped | `titlepage`, `comment` |
 | ignored | PDF layout commands: `\centering`, `\noindent`, `\vspace`, `\hspace`, `\small`, `\large`, `\clearpage`, `\newpage`, `\setlength`, `\setcounter`, `\maketitle`, `\tableofcontents`, `\frontmatter`, `\mainmatter`, `\backmatter`, ... |

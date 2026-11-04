@@ -83,7 +83,21 @@ export function readPreamble(mainSrc) {
     macros[name] = { nargs, default: def, body: body[0] };
   }
 
-  return { raw, classLine, macros, colors, bibFiles, meta };
+  // listings: the language of each \lstdefinestyle and the default of \lstset (for code highlighting)
+  const listings = { styles: {}, language: null };
+  const lre = /\\(lstdefinestyle|lstset)\s*/g;
+  let l;
+  while ((l = lre.exec(src))) {
+    let i = lre.lastIndex, name = null;
+    if (l[1] === 'lstdefinestyle') { const g = readBalanced(src, i); if (!g) continue; name = g[0].trim(); i = skipWs(src, g[1]); }
+    const body = readBalanced(src, i); if (!body) continue;
+    const lang = body[0].match(/language\s*=\s*\{?(?:\[[^\]]*\])?([A-Za-z+#]+)/)?.[1];
+    if (!lang) continue;
+    if (name) listings.styles[name] = lang;
+    else listings.language = lang;
+  }
+
+  return { raw, classLine, macros, colors, bibFiles, meta, listings };
 }
 
 function colorToHex(model, value) {

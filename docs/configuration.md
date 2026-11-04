@@ -14,6 +14,7 @@ export default {
   cacheDir: '.texweb',           // cache and working site
   engine: 'pdflatex',            // for TikZ figures: pdflatex, lualatex or xelatex
   tikzScale: 1.35,               // TikZ figures are scaled by this factor relative to the PDF
+  highlight: false,              // syntax highlighting of code listings, see below
   boxes: { /* see below */ },
   theme: { /* see below */ },
   katexMacros: { '\\E': '\\mathbb{E}' },
@@ -75,3 +76,9 @@ If your colors have other names, map them in `theme`, e.g. `theme: { accent: 'Ma
 ## Math
 
 Formulas are rendered by KaTeX. Macros defined in the preamble with `\newcommand` and `\DeclareMathOperator` are passed to KaTeX automatically. Macros defined with `\def` or `\NewDocumentCommand` are not: add them to `katexMacros`.
+
+## Code highlighting
+
+With `highlight: true`, code listings (`lstlisting`, `minted`) are colored on the website as in a code editor: keywords, strings, comments and numbers each get a color of the theme (`accent`, `obs`, `lemma`, `fig`), in light and dark mode. The coloring happens at build time with [highlight.js](https://highlightjs.org), so the pages get no extra JavaScript. The option is off by default, and then listings are shown as plain text, as before.
+
+The language is read from the listing itself: the argument of `minted`, `language=` of `lstlisting`, or its `style=`, resolved through the `\lstdefinestyle` of the preamble (a `\lstset{language=...}` gives the default). Supported languages: Python, bash, C, C++, Java, JavaScript, TypeScript, JSON, LaTeX, R, SQL, HTML/XML, CSS, YAML; a listing in any other language stays plain. The colors of the PDF are those of the `listings` styles in the preamble, which texweb does not read.

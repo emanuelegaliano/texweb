@@ -5,6 +5,7 @@ import katex from 'katex';
 import { parseFile, parseString, sourceOf, lineOf, argText, hasArg, envName, isStar } from './parse.js';
 import { IGNORED_MACROS, TRANSPARENT_ENVS, SKIPPED_ENVS, TEXT_SYMBOLS, ACCENTS, ALGO_BLOCKS, ALGO_CLOSERS } from './dialect.js';
 import { readBalanced } from './preamble.js';
+import { highlightCode, listingLanguage } from './highlight.js';
 import { validateParams } from './widget-params.js';
 import { closest } from './diagnostics.js';
 import { authorShort, sortKey, formatEntry } from './bib.js';
@@ -505,7 +506,10 @@ export class Renderer {
     code = code.replace(/^\n/, '').replace(/\s+$/, '');
     const src = sourceOf(ctx, n);
     const lang = (src.match(/language=([A-Za-z+#]+)/) ?? src.match(/style=([A-Za-z]+)/) ?? [])[1];
-    flow.block(`<pre class="tw-code"${lang ? ` data-lang="${escAttr(lang)}"` : ''}><code>${esc(code)}</code></pre>`);
+    // with `highlight: true` in the config, the code is colored at build time (unknown languages stay plain)
+    const hl = this.config.highlight ? highlightCode(code, listingLanguage(src, this.preamble.listings)) : null;
+    const body = hl ? `<code class="hljs language-${hl.language}">${hl.html}</code>` : `<code>${esc(code)}</code>`;
+    flow.block(`<pre class="tw-code"${lang ? ` data-lang="${escAttr(lang)}"` : ''}>${body}</pre>`);
   }
 
   algorithmic(n, ctx, flow) {

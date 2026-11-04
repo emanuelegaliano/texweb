@@ -204,6 +204,13 @@ blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--ru
 
 .tw-code { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.9rem; line-height: 1.5; }
 .tw-code code { font-size: 1em; }
+/* syntax highlighting (option `highlight`): the same roles as the PDF listings, with the theme colors */
+.tw-code .hljs-keyword, .tw-code .hljs-selector-tag, .tw-code .hljs-section { color: var(--accent); font-weight: 600; }
+.tw-code .hljs-built_in, .tw-code .hljs-type { color: var(--accent); }
+.tw-code .hljs-string, .tw-code .hljs-regexp, .tw-code .hljs-symbol, .tw-code .hljs-char { color: var(--obs); }
+.tw-code .hljs-comment, .tw-code .hljs-quote, .tw-code .hljs-doctag { color: var(--lemma); }
+.tw-code .hljs-number, .tw-code .hljs-literal { color: var(--fig); }
+.tw-code .hljs-meta { color: var(--ink-soft); }
 
 .tw-math { overflow-x: auto; overflow-y: hidden; margin: 0.8rem 0; }
 
